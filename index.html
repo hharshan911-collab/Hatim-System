@@ -299,13 +299,7 @@ footer strong{ color:var(--teal); font-weight:700; }
 
       <div class="card">
         <h2><span class="dot"></span> الاتصال بقارئ البطاقات (ESP32)</h2>
-        <div class="settings-row">
-          <div class="field" style="flex:2;">
-            <label>عنوان IP الخاص بالجهاز</label>
-            <input type="text" id="esp32IpInput" placeholder="مثال: 192.168.1.25" style="direction:ltr;">
-          </div>
-        </div>
-        <div class="sim-note" id="connStatus">⚪ أدخل عنوان IP للجهاز (يظهر على شاشة LCD وبـSerial Monitor عند بداية التشغيل)</div>
+        <div class="sim-note" id="connStatus">🟡 انتظار أول اتصال من قارئ البطاقات عبر Firebase...</div>
       </div>
 
       <div class="card">
@@ -525,10 +519,11 @@ async function enterDashboard(user){
   document.getElementById('authForm').reset();
   syncSettingsInputs();
   renderAll();
-  pollReader();
+  startDeviceListener();
 }
 
 function leaveDashboard(){
+  stopDeviceListener();
   currentUser = null;
   loggedIn = false;
   document.getElementById('dashboardScreen').style.display = 'none';
@@ -695,48 +690,70 @@ function syncSettingsInputs(){
 document.getElementById('onTimeInput').addEventListener('change', e=>{ currentPeriod().onTime = e.target.value; saveAppData(); });
 document.getElementById('lateTimeInput').addEventListener('change', e=>{ currentPeriod().lateTime = e.target.value; saveAppData(); });
 
-// ===== ESP32 real-time reader connection =====
-let esp32Ip = localStorage.getItem('esp32Ip') || '';
+// ===== ESP32 cloud reader connection عبر Firestore =====
+const DEVICE_ID = 'hatim-reader';
 let lastSeq = -1;
-const ipInput = document.getElementById('esp32IpInput');
-ipInput.value = esp32Ip;
-ipInput.addEventListener('change', e=>{
-  esp32Ip = e.target.value.trim();
-  localStorage.setItem('esp32Ip', esp32Ip);
-  lastSeq = -1; // إعادة ضبط، عشان أول قراءة بعد تغيير IP ما تُسجَّل كحضور فورًا
-  pollReader();
-});
+let deviceUnsubscribe = null;
 
 function updateConnStatus(state){
   const el = document.getElementById('connStatus');
-  if(!esp32Ip){ el.textContent = '⚪ أدخل عنوان IP للجهاز (يظهر على شاشة LCD وبـSerial Monitor عند بداية التشغيل)'; return; }
-  if(state === 'ok') el.textContent = '🟢 متصل بالقارئ — جاهز لاستقبال البطاقات';
-  else el.textContent = '🔴 تعذر الاتصال بـ' + esp32Ip + ' — تأكد إن الجهاز شغّال وعلى نفس شبكة الواي فاي';
+  if(!el) return;
+  if(state === 'ok') {
+    el.textContent = '🟢 متصل بالقارئ عبر Firebase — جاهز لاستقبال البطاقات من أي شبكة';
+  } else if(state === 'waiting') {
+    el.textContent = '🟡 انتظار قراءة من ESP32 عبر Firebase...';
+  } else {
+    el.textContent = '🔴 تعذر الوصول إلى بيانات القارئ في Firebase';
+  }
 }
 
-function sendDeviceResult(status){
-  // يخبر الجهاز الفعلي بالنتيجة عشان يشغّل اللمبة المناسبة على أرض الواقع
-  if(!esp32Ip) return;
-  fetch('http://' + esp32Ip + '/api/result?status=' + status, {cache:'no-store'}).catch(()=>{});
+function deviceDocRef(){
+  return db.collection('devices').doc(DEVICE_ID);
 }
 
-function pollReader(){
-  if(!loggedIn){ return; }
-  if(!esp32Ip){ updateConnStatus('idle'); return; }
-  fetch('http://' + esp32Ip + '/api/latest', {cache:'no-store'})
-    .then(r=>r.json())
-    .then(data=>{
-      updateConnStatus('ok');
-      if(typeof data.seq === 'number' && data.seq !== lastSeq){
-        if(lastSeq !== -1 && data.uid){
-          onCardScanned(data.uid);
-        }
-        lastSeq = data.seq;
-      }
-    })
-    .catch(()=>{ updateConnStatus('fail'); });
+async function sendDeviceResult(status){
+  try{
+    if(!currentUser) return;
+    await deviceDocRef().set({status}, {merge:true});
+  }catch(e){
+    console.error('Device result failed', e);
+    updateConnStatus('fail');
+  }
 }
-setInterval(pollReader, 1000);
+
+function startDeviceListener(){
+  if(deviceUnsubscribe) deviceUnsubscribe();
+  lastSeq = -1;
+  updateConnStatus('waiting');
+
+  deviceUnsubscribe = deviceDocRef().onSnapshot(snap=>{
+    if(!snap.exists){
+      updateConnStatus('waiting');
+      return;
+    }
+
+    updateConnStatus('ok');
+    const data = snap.data() || {};
+    const seq = Number(data.seq);
+
+    // نعالج القراءة فقط عندما تكون Pending، حتى لا نكررها بعد كتابة النتيجة
+    if(data.status === 'pending' && Number.isFinite(seq) && seq !== lastSeq && data.uid){
+      lastSeq = seq;
+      onCardScanned(String(data.uid));
+    }
+  }, err=>{
+    console.error('Device listener failed', err);
+    updateConnStatus('fail');
+  });
+}
+
+function stopDeviceListener(){
+  if(deviceUnsubscribe){
+    deviceUnsubscribe();
+    deviceUnsubscribe = null;
+  }
+  lastSeq = -1;
+}
 
 function onCardScanned(uidRaw){
   const uid = uidRaw.trim().toUpperCase();
