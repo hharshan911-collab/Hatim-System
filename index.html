@@ -482,7 +482,7 @@ function friendlyAuthError(code){
     'auth/wrong-password':'كلمة المرور غير صحيحة.',
     'auth/too-many-requests':'محاولات كثيرة. حاول مرة أخرى لاحقًا.'
   };
-  return map[code] || 'تعذّر تسجيل الدخول. تحقق من البيانات والاتصال بالإنترنت.';
+  return map[code] || ('خطأ Firebase: ' + code);
 }
 
 authForm.addEventListener('submit', async (e)=>{
