@@ -175,10 +175,73 @@ tbody tr:last-child td{ border-bottom:none; }
 
 footer{ text-align:center; padding:26px 0 6px; margin-top:10px; border-top:1px solid var(--line); color:var(--text-dim); font-size:12.5px; }
 footer strong{ color:var(--teal); font-weight:700; }
+
+/* ===== Auth screen ===== */
+#authScreen{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+.auth-card{ width:100%; max-width:360px; background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:32px 26px; }
+.auth-card .brand-mark{ margin:0 auto 18px; }
+.auth-card h1{ font-size:18px; font-weight:900; text-align:center; margin-bottom:4px; }
+.auth-card p.sub{ font-size:12.5px; color:var(--text-dim); text-align:center; margin-bottom:24px; }
+.auth-field{ margin-bottom:14px; }
+.auth-field label{ font-size:12.5px; color:var(--text-dim); display:block; margin-bottom:6px; }
+.auth-field input{
+  width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--text);
+  border-radius:10px; padding:11px 12px; font-family:'Tajawal',sans-serif; font-size:14px;
+}
+.auth-field input:focus{ outline:none; border-color:var(--teal); }
+.auth-submit{
+  width:100%; background:var(--teal); border:none; color:#0B1712; font-weight:700; font-size:14px;
+  border-radius:10px; padding:12px; cursor:pointer; margin-top:6px; transition: opacity .15s ease;
+}
+.auth-submit:hover{ opacity:.9; }
+.auth-error{ font-size:12.5px; color:var(--absent); margin-top:10px; text-align:center; min-height:16px; }
+.auth-switch{ font-size:12px; color:var(--text-dim); text-align:center; margin-top:16px; }
+.logout-btn{
+  background:transparent; border:1px solid var(--line); color:var(--text-dim); padding:8px 14px;
+  border-radius:9px; font-family:'Tajawal',sans-serif; font-size:12.5px; cursor:pointer; transition: all .15s ease;
+  white-space:nowrap;
+}
+.logout-btn:hover{ border-color:var(--absent); color:var(--absent); }
+.header-right{ display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap; }
 </style>
 </head>
 <body>
-<div class="wrap">
+
+<!-- ===== شاشة الدخول / إنشاء الحساب ===== -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="brand-mark" style="width:46px;height:46px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0B1712" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="7" width="18" height="13" rx="2"/>
+        <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        <circle cx="12" cy="13.5" r="2.2"/>
+      </svg>
+    </div>
+    <h1 id="authTitle">تسجيل الدخول</h1>
+    <p class="sub" id="authSub">نظام الحضور الذكي — لوحة المعلم</p>
+
+    <form id="authForm">
+      <div class="auth-field">
+        <label>اسم المستخدم</label>
+        <input type="text" id="authUsername" autocomplete="username" required>
+      </div>
+      <div class="auth-field">
+        <label>كلمة المرور</label>
+        <input type="password" id="authPassword" autocomplete="current-password" required>
+      </div>
+      <div class="auth-field" id="authConfirmField" style="display:none;">
+        <label>تأكيد كلمة المرور</label>
+        <input type="password" id="authPasswordConfirm" autocomplete="new-password">
+      </div>
+      <button type="submit" class="auth-submit" id="authSubmitBtn">دخول</button>
+      <div class="auth-error" id="authError"></div>
+    </form>
+    <div class="auth-switch" id="authSwitchNote"></div>
+  </div>
+</div>
+
+<!-- ===== لوحة المعلم ===== -->
+<div class="wrap" id="dashboardScreen" style="display:none;">
 
   <header>
     <div class="brand">
@@ -194,9 +257,12 @@ footer strong{ color:var(--teal); font-weight:700; }
         <p>لوحة المعلم · بطاقة RFID · ESP32</p>
       </div>
     </div>
-    <div class="clock-box">
-      <div class="time num" id="liveClock">--:--:-- --</div>
-      <div class="date" id="liveDate">—</div>
+    <div class="header-right">
+      <div class="clock-box">
+        <div class="time num" id="liveClock">--:--:-- --</div>
+        <div class="date" id="liveDate">—</div>
+      </div>
+      <button class="logout-btn" id="logoutBtn">🚪 تسجيل الخروج</button>
     </div>
   </header>
 
@@ -286,22 +352,54 @@ footer strong{ color:var(--teal); font-weight:700; }
   </div>
 
   <footer>نظام الحضور الذكي — صنع بواسطة <strong>حاتم</strong></footer>
-</div>
+</div><!-- /#dashboardScreen -->
 
 <div class="toast" id="toast"></div>
 
+<!-- Firebase (قاعدة بيانات سحابية مجانية — تخلي البيانات تنتقل بين أي جهاز) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
 <script>
+// ================================================================
+// ===== قاعدة البيانات السحابية (Firebase) =====
+// عدّل القيم الستة تحت بمعلومات مشروعك من Firebase Console
+// (Project settings → General → Your apps → SDK setup and configuration)
+// ================================================================
+const firebaseConfig = {
+  apiKey: "ضع_apiKey_هنا",
+  authDomain: "ضع_authDomain_هنا",
+  projectId: "ضع_projectId_هنا",
+  storageBucket: "ضع_storageBucket_هنا",
+  messagingSenderId: "ضع_messagingSenderId_هنا",
+  appId: "ضع_appId_هنا"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let loggedIn = false;
+
+async function sha256Hex(str){
+  const enc = new TextEncoder().encode(str);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function defaultStudents(){
+  return [
+    {id:'st1', name:'أحمد محمد', card:'A1F2', icon:'🧑\u200d🎓'},
+    {id:'st2', name:'محمد سالم', card:'B7C3', icon:'🧑\u200d🎓'},
+    {id:'st3', name:'خالد عبدالله', card:'C4D9', icon:'🧑\u200d🎓'},
+    {id:'st4', name:'سارة يوسف', card:'D2E1', icon:'👩\u200d🎓'},
+    {id:'st5', name:'نورة فهد', card:'E9A6', icon:'👩\u200d🎓'},
+    {id:'st6', name:'فيصل عمر', card:'F3B8', icon:'🧑\u200d🎓'},
+    {id:'st7', name:'ريم ناصر', card:'A8C1', icon:'👩\u200d🎓'},
+    {id:'st8', name:'عبدالعزيز طارق', card:'B5D4', icon:'🧑\u200d🎓'},
+  ];
+}
+
 // ===== Roster (shared across all periods) =====
-let students = [
-  {id:'st1', name:'أحمد محمد', card:'A1F2', icon:'🧑\u200d🎓'},
-  {id:'st2', name:'محمد سالم', card:'B7C3', icon:'🧑\u200d🎓'},
-  {id:'st3', name:'خالد عبدالله', card:'C4D9', icon:'🧑\u200d🎓'},
-  {id:'st4', name:'سارة يوسف', card:'D2E1', icon:'👩\u200d🎓'},
-  {id:'st5', name:'نورة فهد', card:'E9A6', icon:'👩\u200d🎓'},
-  {id:'st6', name:'فيصل عمر', card:'F3B8', icon:'🧑\u200d🎓'},
-  {id:'st7', name:'ريم ناصر', card:'A8C1', icon:'👩\u200d🎓'},
-  {id:'st8', name:'عبدالعزيز طارق', card:'B5D4', icon:'🧑\u200d🎓'},
-];
+let students = defaultStudents();
 let studentSeq = students.length + 1;
 
 // ===== Periods =====
@@ -314,6 +412,152 @@ let editingExcuseFor = null;
 let addingPeriod = false;
 let pendingDeletePeriod = null, pendingDeletePeriodTimer = null;
 let pendingDeleteStudent = null, pendingDeleteStudentTimer = null;
+
+// حفظ كل بيانات التطبيق (الطلاب + الحصص + السجلات) في Firebase — يظهر فورًا على أي جهاز ثاني
+async function saveAppData(){
+  try{
+    const serialized = {
+      students, studentSeq,
+      periodSeq, currentPeriodId,
+      periods: periods.map(p => ({
+        ...p,
+        records: Object.fromEntries(Object.entries(p.records).map(([sid, r]) => [sid, {...r, time: r.time.toISOString()}]))
+      }))
+    };
+    await db.collection('attendance').doc('main').set(serialized);
+  }catch(e){
+    console.error('Save failed', e);
+    showToast('⚠️ تعذّر حفظ البيانات — تحقق من الاتصال بالإنترنت');
+  }
+}
+
+async function loadAppData(){
+  try{
+    const snap = await db.collection('attendance').doc('main').get();
+    if(!snap.exists){ return false; }
+    const d = snap.data();
+    students = d.students || defaultStudents();
+    studentSeq = d.studentSeq || (students.length + 1);
+    periodSeq = d.periodSeq || 2;
+    currentPeriodId = d.currentPeriodId || (d.periods && d.periods[0] && d.periods[0].id) || 'p1';
+    periods = (d.periods && d.periods.length) ? d.periods.map(p => ({
+      ...p,
+      records: Object.fromEntries(Object.entries(p.records || {}).map(([sid, r]) => [sid, {...r, time: new Date(r.time)}]))
+    })) : [{id:'p1', name:'الحصة الأولى', onTime:'07:00', lateTime:'07:15', records:{}}];
+    return true;
+  }catch(e){
+    console.error('Load failed', e);
+    showToast('⚠️ تعذّر تحميل البيانات — تحقق من الاتصال بالإنترنت');
+    return false;
+  }
+}
+
+// ===== شاشة الدخول =====
+const authForm = document.getElementById('authForm');
+const authError = document.getElementById('authError');
+const authConfirmField = document.getElementById('authConfirmField');
+const authTitle = document.getElementById('authTitle');
+const authSub = document.getElementById('authSub');
+const authSubmitBtn = document.getElementById('authSubmitBtn');
+const authSwitchNote = document.getElementById('authSwitchNote');
+
+let accountExists = null; // null = لسا ما تحققنا من Firebase
+
+async function checkAccountExists(){
+  if(accountExists !== null) return accountExists;
+  const snap = await db.collection('attendance').doc('auth').get();
+  accountExists = snap.exists;
+  return accountExists;
+}
+
+function setAuthMode(exists){
+  if(exists){
+    authTitle.textContent = 'تسجيل الدخول';
+    authSub.textContent = 'نظام الحضور الذكي — لوحة المعلم';
+    authConfirmField.style.display = 'none';
+    authSubmitBtn.textContent = 'دخول';
+    authSwitchNote.textContent = 'البيانات محفوظة سحابيًا — تقدر تدخل من أي جهاز بنفس الحساب.';
+  } else {
+    authTitle.textContent = 'إنشاء حساب المعلم';
+    authSub.textContent = 'أول مرة؟ أنشئ اسم مستخدم وكلمة مرور';
+    authConfirmField.style.display = 'block';
+    authSubmitBtn.textContent = 'إنشاء الحساب والدخول';
+    authSwitchNote.textContent = 'يُحفظ هذا الحساب سحابيًا، وتقدر تسجّل دخولك فيه من أي جهاز.';
+  }
+  authError.textContent = '';
+}
+
+async function showAuthScreen(){
+  authTitle.textContent = 'جاري التحقق...';
+  authSub.textContent = 'لحظة، نتأكد من الحساب';
+  authSubmitBtn.disabled = true;
+  try{
+    const exists = await checkAccountExists();
+    setAuthMode(exists);
+  }catch(e){
+    authTitle.textContent = 'تعذّر الاتصال';
+    authSub.textContent = 'تأكد من الإنترنت ومن إعدادات Firebase بالكود، ثم أعد تحميل الصفحة';
+  }
+  authSubmitBtn.disabled = false;
+}
+
+authForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  authError.textContent = '';
+  const username = document.getElementById('authUsername').value.trim();
+  const password = document.getElementById('authPassword').value;
+  authSubmitBtn.disabled = true;
+  authSubmitBtn.textContent = 'جاري التحقق...';
+
+  try{
+    const exists = await checkAccountExists();
+    if(!exists){
+      const confirmPass = document.getElementById('authPasswordConfirm').value;
+      if(password.length < 4){ authError.textContent = 'كلمة المرور لازم تكون 4 أحرف على الأقل'; setAuthMode(false); return; }
+      if(password !== confirmPass){ authError.textContent = 'كلمتا المرور غير متطابقتين'; setAuthMode(false); return; }
+      const passwordHash = await sha256Hex(password);
+      await db.collection('attendance').doc('auth').set({username, passwordHash});
+      accountExists = true;
+      await enterDashboard();
+    } else {
+      const snap = await db.collection('attendance').doc('auth').get();
+      const saved = snap.data();
+      const passwordHash = await sha256Hex(password);
+      if(username === saved.username && passwordHash === saved.passwordHash){
+        await enterDashboard();
+      } else {
+        authError.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
+        setAuthMode(true);
+      }
+    }
+  }catch(e){
+    console.error(e);
+    authError.textContent = 'تعذّر الاتصال بقاعدة البيانات — تحقق من الإنترنت';
+    setAuthMode(accountExists === true);
+  }
+});
+
+async function enterDashboard(){
+  authSubmitBtn.textContent = 'جاري تحميل البيانات...';
+  loggedIn = true;
+  await loadAppData(); // لو ما فيه بيانات محفوظة بعد، يبقى على القيم الافتراضية
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('dashboardScreen').style.display = 'block';
+  document.getElementById('authForm').reset();
+  authSubmitBtn.disabled = false;
+  syncSettingsInputs();
+  renderAll();
+  pollReader();
+}
+
+document.getElementById('logoutBtn').addEventListener('click', ()=>{
+  loggedIn = false;
+  document.getElementById('dashboardScreen').style.display = 'none';
+  document.getElementById('authScreen').style.display = 'flex';
+  setAuthMode(true); // الحساب أكيد موجود لو وصلنا للوحة أصلاً
+});
+
+showAuthScreen();
 
 function currentPeriod(){ return periods.find(p => p.id === currentPeriodId); }
 
@@ -438,6 +682,7 @@ function confirmAddPeriod(){
   syncSettingsInputs();
   renderPeriodTabs();
   renderAll();
+  saveAppData();
   showToast('تمت إضافة "'+p.name+'"');
 }
 
@@ -449,6 +694,7 @@ function doDeletePeriod(id){
   syncSettingsInputs();
   renderPeriodTabs();
   renderAll();
+  saveAppData();
   showToast('تم حذف "'+p.name+'"');
 }
 
@@ -457,8 +703,8 @@ function syncSettingsInputs(){
   document.getElementById('onTimeInput').value = p.onTime;
   document.getElementById('lateTimeInput').value = p.lateTime;
 }
-document.getElementById('onTimeInput').addEventListener('change', e=>{ currentPeriod().onTime = e.target.value; });
-document.getElementById('lateTimeInput').addEventListener('change', e=>{ currentPeriod().lateTime = e.target.value; });
+document.getElementById('onTimeInput').addEventListener('change', e=>{ currentPeriod().onTime = e.target.value; saveAppData(); });
+document.getElementById('lateTimeInput').addEventListener('change', e=>{ currentPeriod().lateTime = e.target.value; saveAppData(); });
 
 // ===== ESP32 real-time reader connection =====
 let esp32Ip = localStorage.getItem('esp32Ip') || '';
@@ -479,7 +725,14 @@ function updateConnStatus(state){
   else el.textContent = '🔴 تعذر الاتصال بـ' + esp32Ip + ' — تأكد إن الجهاز شغّال وعلى نفس شبكة الواي فاي';
 }
 
+function sendDeviceResult(status){
+  // يخبر الجهاز الفعلي بالنتيجة عشان يشغّل اللمبة المناسبة على أرض الواقع
+  if(!esp32Ip) return;
+  fetch('http://' + esp32Ip + '/api/result?status=' + status, {cache:'no-store'}).catch(()=>{});
+}
+
 function pollReader(){
+  if(!loggedIn){ return; }
   if(!esp32Ip){ updateConnStatus('idle'); return; }
   fetch('http://' + esp32Ip + '/api/latest', {cache:'no-store'})
     .then(r=>r.json())
@@ -495,17 +748,17 @@ function pollReader(){
     .catch(()=>{ updateConnStatus('fail'); });
 }
 setInterval(pollReader, 1000);
-pollReader();
 
 function onCardScanned(uidRaw){
   const uid = uidRaw.trim().toUpperCase();
   const s = students.find(x => x.card.toUpperCase() === uid);
   if(s){
-    handleScan(s.id);
+    handleScan(s.id, true);
   } else {
     showToast('⚠️ بطاقة غير مسجّلة رقمها: ' + uid + ' — أضفها بالأسفل');
     const cardInput = document.querySelector('#addStudentForm [name="card"]');
     if(cardInput) cardInput.value = uid;
+    sendDeviceResult('error');
   }
 }
 
@@ -539,6 +792,7 @@ function renderRoster(){
     if(val){ students.find(x=>x.id===b.dataset.save).name = val; }
     editingStudentId = null;
     renderRoster(); renderTable();
+    saveAppData();
   }));
   list.querySelectorAll('[data-remove]').forEach(b=> b.addEventListener('click', ()=>{
     const id = b.dataset.remove;
@@ -549,6 +803,7 @@ function renderRoster(){
       students = students.filter(x=>x.id!==id);
       periods.forEach(p=> delete p.records[id]);
       renderAll();
+      saveAppData();
       showToast('تم حذف "'+st.name+'"');
     } else {
       pendingDeleteStudent = id;
@@ -578,6 +833,7 @@ document.getElementById('addStudentForm').addEventListener('submit', e=>{
   nameInput.value = '';
   cardInput.value = '';
   renderAll();
+  saveAppData();
   showToast('تمت إضافة الطالب "'+name+'" — بطاقة #'+card);
 });
 
@@ -631,11 +887,13 @@ function renderTable(){
     currentPeriod().records[b.dataset.excuseSave].excuse = input.value.trim();
     editingExcuseFor = null;
     renderTable();
+    saveAppData();
     showToast('تم حفظ عذر التأخير');
   }));
   tableBody.querySelectorAll('[data-excuse-clear]').forEach(b=> b.addEventListener('click', ()=>{
     currentPeriod().records[b.dataset.excuseClear].excuse = null;
     renderTable();
+    saveAppData();
   }));
 
   updateStats();
@@ -655,7 +913,8 @@ function updateStats(){
 }
 
 // ===== Scan handling =====
-function handleScan(studentId){
+// fromDevice = true لو الاستدعاء جاء من تمرير بطاقة فعلي على الجهاز (نرسل له نتيجة نضيء لمبته المناسبة)
+function handleScan(studentId, fromDevice){
   const s = students.find(x=>x.id===studentId);
   const period = currentPeriod();
   const now = getNow();
@@ -665,6 +924,7 @@ function handleScan(studentId){
     showScanResult(s, 'dup', rec.time, true);
     beep(220, 90, 'square'); setTimeout(()=>beep(220,90,'square'), 140);
     showToast(`⚠️ ${s.name} مسجَّل مسبقًا الساعة ${fmtTime(rec.time)}`);
+    // لا نرسل حالة للجهاز عند التكرار (يبقى بدون لون مخصص) تفاديًا للخلط مع "بطاقة غير معروفة"
     return;
   }
 
@@ -676,12 +936,17 @@ function handleScan(studentId){
   else if(status==='late') beep(660, 130, 'sine');
   else { beep(300,150,'sawtooth'); setTimeout(()=>beep(220,150,'sawtooth'),160); }
 
+  if(fromDevice){
+    sendDeviceResult(status==='present' ? 'green' : status==='late' ? 'yellow' : 'red');
+  }
+
   const msg = status==='present' ? `✅ تم تسجيل حضور ${s.name} — ${fmtTime(now)}`
             : status==='late' ? `🟡 ${s.name} سُجّل متأخرًا — ${fmtTime(now)}`
             : `❌ ${s.name} تجاوز فترة السماح وسُجّل غائبًا — ${fmtTime(now)}`;
   showToast(msg);
 
   renderTable();
+  saveAppData();
 }
 
 function showScanResult(s, status, time, isDup){
@@ -724,6 +989,7 @@ document.getElementById('resetBtn').addEventListener('click', ()=>{
   document.getElementById('resultBox').style.display = 'none';
   document.getElementById('scannerBox').classList.remove('flash-present','flash-late','flash-absent');
   renderAll();
+  saveAppData();
   showToast('تمت إعادة تعيين سجل هذه الحصة');
 });
 
@@ -742,8 +1008,6 @@ function renderAll(){
 }
 
 tickClock();
-syncSettingsInputs();
-renderAll();
 </script>
 </body>
 </html>
