@@ -222,8 +222,8 @@ footer strong{ color:var(--teal); font-weight:700; }
 
     <form id="authForm">
       <div class="auth-field">
-        <label>اسم المستخدم</label>
-        <input type="text" id="authUsername" autocomplete="username" required>
+        <label>البريد الإلكتروني</label>
+        <input type="email" id="authEmail" autocomplete="email" placeholder="name@example.com" required>
       </div>
       <div class="auth-field">
         <label>كلمة المرور</label>
@@ -359,6 +359,7 @@ footer strong{ color:var(--teal); font-weight:700; }
 <!-- Firebase (قاعدة بيانات سحابية مجانية — تخلي البيانات تنتقل بين أي جهاز) -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 
 <script>
 // ================================================================
@@ -379,11 +380,6 @@ const db = firebase.firestore();
 
 let loggedIn = false;
 
-async function sha256Hex(str){
-  const enc = new TextEncoder().encode(str);
-  const buf = await crypto.subtle.digest('SHA-256', enc);
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
 
 function defaultStudents(){
   return [
@@ -424,7 +420,8 @@ async function saveAppData(){
         records: Object.fromEntries(Object.entries(p.records).map(([sid, r]) => [sid, {...r, time: r.time.toISOString()}]))
       }))
     };
-    await db.collection('attendance').doc('main').set(serialized);
+    if(!currentUser) return;
+    await db.collection('users').doc(currentUser.uid).collection('attendance').doc('main').set(serialized);
   }catch(e){
     console.error('Save failed', e);
     showToast('⚠️ تعذّر حفظ البيانات — تحقق من الاتصال بالإنترنت');
@@ -433,7 +430,8 @@ async function saveAppData(){
 
 async function loadAppData(){
   try{
-    const snap = await db.collection('attendance').doc('main').get();
+    if(!currentUser) return false;
+    const snap = await db.collection('users').doc(currentUser.uid).collection('attendance').doc('main').get();
     if(!snap.exists){ return false; }
     const d = snap.data();
     students = d.students || defaultStudents();
@@ -452,7 +450,8 @@ async function loadAppData(){
   }
 }
 
-// ===== شاشة الدخول =====
+// ===== شاشة الدخول باستخدام Firebase Authentication =====
+const auth = firebase.auth();
 const authForm = document.getElementById('authForm');
 const authError = document.getElementById('authError');
 const authConfirmField = document.getElementById('authConfirmField');
@@ -461,103 +460,93 @@ const authSub = document.getElementById('authSub');
 const authSubmitBtn = document.getElementById('authSubmitBtn');
 const authSwitchNote = document.getElementById('authSwitchNote');
 
-let accountExists = null; // null = لسا ما تحققنا من Firebase
+let authMode = 'login';
+let currentUser = null;
 
-async function checkAccountExists(){
-  if(accountExists !== null) return accountExists;
-  const snap = await db.collection('attendance').doc('auth').get();
-  accountExists = snap.exists;
-  return accountExists;
-}
-
-function setAuthMode(exists){
-  if(exists){
-    authTitle.textContent = 'تسجيل الدخول';
-    authSub.textContent = 'نظام الحضور الذكي — لوحة المعلم';
-    authConfirmField.style.display = 'none';
-    authSubmitBtn.textContent = 'دخول';
-    authSwitchNote.textContent = 'البيانات محفوظة سحابيًا — تقدر تدخل من أي جهاز بنفس الحساب.';
-  } else {
-    authTitle.textContent = 'إنشاء حساب المعلم';
-    authSub.textContent = 'أول مرة؟ أنشئ اسم مستخدم وكلمة مرور';
-    authConfirmField.style.display = 'block';
-    authSubmitBtn.textContent = 'إنشاء الحساب والدخول';
-    authSwitchNote.textContent = 'يُحفظ هذا الحساب سحابيًا، وتقدر تسجّل دخولك فيه من أي جهاز.';
-  }
+function setAuthMode(mode){
+  authMode = mode;
+  const creating = mode === 'signup';
+  authTitle.textContent = creating ? 'إنشاء حساب المعلم' : 'تسجيل الدخول';
+  authSub.textContent = 'نظام الحضور الذكي — لوحة المعلم';
+  authConfirmField.style.display = creating ? 'block' : 'none';
+  authSubmitBtn.textContent = creating ? 'إنشاء الحساب والدخول' : 'دخول';
+  authSwitchNote.innerHTML = creating
+    ? 'لديك حساب بالفعل؟ <button type="button" id="switchAuthMode" class="icon-btn" style="display:inline-flex;">تسجيل الدخول</button>'
+    : 'ليس لديك حساب؟ <button type="button" id="switchAuthMode" class="icon-btn" style="display:inline-flex;">إنشاء حساب</button>';
   authError.textContent = '';
+  const btn = document.getElementById('switchAuthMode');
+  if(btn) btn.addEventListener('click', ()=> setAuthMode(creating ? 'login' : 'signup'));
 }
 
-async function showAuthScreen(){
-  authTitle.textContent = 'جاري التحقق...';
-  authSub.textContent = 'لحظة، نتأكد من الحساب';
-  authSubmitBtn.disabled = true;
-  try{
-    const exists = await checkAccountExists();
-    setAuthMode(exists);
-  }catch(e){
-    authTitle.textContent = 'تعذّر الاتصال';
-    authSub.textContent = 'تأكد من الإنترنت ومن إعدادات Firebase بالكود، ثم أعد تحميل الصفحة';
-  }
-  authSubmitBtn.disabled = false;
+function friendlyAuthError(code){
+  const map = {
+    'auth/email-already-in-use':'هذا البريد مستخدم بالفعل.',
+    'auth/invalid-email':'البريد الإلكتروني غير صحيح.',
+    'auth/weak-password':'كلمة المرور ضعيفة. استخدم 6 أحرف على الأقل.',
+    'auth/invalid-credential':'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
+    'auth/user-not-found':'لا يوجد حساب بهذا البريد.',
+    'auth/wrong-password':'كلمة المرور غير صحيحة.',
+    'auth/too-many-requests':'محاولات كثيرة. حاول مرة أخرى لاحقًا.'
+  };
+  return map[code] || 'تعذّر تسجيل الدخول. تحقق من البيانات والاتصال بالإنترنت.';
 }
 
 authForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
   authError.textContent = '';
-  const username = document.getElementById('authUsername').value.trim();
+  const email = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
   authSubmitBtn.disabled = true;
   authSubmitBtn.textContent = 'جاري التحقق...';
-
   try{
-    const exists = await checkAccountExists();
-    if(!exists){
+    if(authMode === 'signup'){
       const confirmPass = document.getElementById('authPasswordConfirm').value;
-      if(password.length < 4){ authError.textContent = 'كلمة المرور لازم تكون 4 أحرف على الأقل'; setAuthMode(false); return; }
-      if(password !== confirmPass){ authError.textContent = 'كلمتا المرور غير متطابقتين'; setAuthMode(false); return; }
-      const passwordHash = await sha256Hex(password);
-      await db.collection('attendance').doc('auth').set({username, passwordHash});
-      accountExists = true;
-      await enterDashboard();
+      if(password.length < 6){ throw {code:'auth/weak-password'}; }
+      if(password !== confirmPass){ authError.textContent = 'كلمتا المرور غير متطابقتين'; return; }
+      await auth.createUserWithEmailAndPassword(email, password);
     } else {
-      const snap = await db.collection('attendance').doc('auth').get();
-      const saved = snap.data();
-      const passwordHash = await sha256Hex(password);
-      if(username === saved.username && passwordHash === saved.passwordHash){
-        await enterDashboard();
-      } else {
-        authError.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
-        setAuthMode(true);
-      }
+      await auth.signInWithEmailAndPassword(email, password);
     }
   }catch(e){
     console.error(e);
-    authError.textContent = 'تعذّر الاتصال بقاعدة البيانات — تحقق من الإنترنت';
-    setAuthMode(accountExists === true);
+    authError.textContent = friendlyAuthError(e.code);
+  }finally{
+    authSubmitBtn.disabled = false;
+    authSubmitBtn.textContent = authMode === 'signup' ? 'إنشاء الحساب والدخول' : 'دخول';
   }
 });
 
-async function enterDashboard(){
-  authSubmitBtn.textContent = 'جاري تحميل البيانات...';
+async function enterDashboard(user){
+  currentUser = user;
   loggedIn = true;
-  await loadAppData(); // لو ما فيه بيانات محفوظة بعد، يبقى على القيم الافتراضية
+  await loadAppData();
   document.getElementById('authScreen').style.display = 'none';
   document.getElementById('dashboardScreen').style.display = 'block';
   document.getElementById('authForm').reset();
-  authSubmitBtn.disabled = false;
   syncSettingsInputs();
   renderAll();
   pollReader();
 }
 
-document.getElementById('logoutBtn').addEventListener('click', ()=>{
+function leaveDashboard(){
+  currentUser = null;
   loggedIn = false;
   document.getElementById('dashboardScreen').style.display = 'none';
   document.getElementById('authScreen').style.display = 'flex';
-  setAuthMode(true); // الحساب أكيد موجود لو وصلنا للوحة أصلاً
+}
+
+document.getElementById('logoutBtn').addEventListener('click', async ()=>{
+  await auth.signOut();
 });
 
-showAuthScreen();
+auth.onAuthStateChanged(async user => {
+  if(user){
+    await enterDashboard(user);
+  } else {
+    leaveDashboard();
+    setAuthMode('login');
+  }
+});
 
 function currentPeriod(){ return periods.find(p => p.id === currentPeriodId); }
 
