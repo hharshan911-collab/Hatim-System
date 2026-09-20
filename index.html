@@ -203,6 +203,62 @@ footer strong{ color:var(--teal); font-weight:700; }
 }
 .logout-btn:hover{ border-color:var(--absent); color:var(--absent); }
 .header-right{ display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap; }
+
+/* ===== Day-of-week tabs ===== */
+.days-row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+.week-nav-btn{
+  width:34px;height:34px;border-radius:50%; background:var(--panel); border:1px solid var(--line); color:var(--text-dim);
+  font-size:15px; cursor:pointer; flex-shrink:0; display:flex;align-items:center;justify-content:center; transition: all .15s ease;
+}
+.week-nav-btn:hover{ border-color:var(--teal); color:var(--teal); }
+.day-tab{
+  background: var(--panel); border:1px solid var(--line); color:var(--text-dim); padding:8px 14px;
+  border-radius:12px; font-size:12.5px; font-family:'Tajawal',sans-serif; font-weight:700; cursor:pointer;
+  text-align:center; transition: all .15s ease; flex-shrink:0; min-width:64px;
+}
+.day-tab .dname{ display:block; }
+.day-tab .dnum{ display:block; font-family:'Space Grotesk',sans-serif; font-size:14px; margin-top:3px; color:var(--text-dim); }
+.day-tab:hover{ border-color: var(--teal); }
+.day-tab.active{ background: var(--teal-dim); border-color: var(--teal); color: var(--teal); }
+.day-tab.active .dnum{ color: var(--teal); }
+.day-tab.today::before{ content:'●'; color:var(--teal); font-size:8px; display:block; margin-bottom:2px; }
+.day-today-btn{
+  background:transparent; border:1px dashed var(--line); color:var(--text-dim); padding:8px 12px; border-radius:12px;
+  font-family:'Tajawal',sans-serif; font-size:12px; cursor:pointer; flex-shrink:0;
+}
+.day-today-btn:hover{ border-color:var(--teal); color:var(--teal); }
+
+/* ===== Report / export buttons ===== */
+.report-btns{ display:flex; gap:8px; flex-wrap:wrap; }
+.report-btn{
+  background:transparent; border:1px solid var(--line); color:var(--text-dim); padding:8px 14px; border-radius:9px;
+  font-family:'Tajawal',sans-serif; font-size:12.5px; cursor:pointer; transition: all .15s ease; white-space:nowrap;
+}
+.report-btn:hover{ border-color: var(--teal); color:var(--teal); }
+
+/* ===== Auth mode tabs (teacher / parent) ===== */
+.auth-mode-tabs{ display:flex; gap:6px; background:var(--panel-2); border-radius:12px; padding:4px; margin-bottom:22px; }
+.auth-mode-tab{
+  flex:1; text-align:center; padding:9px 6px; border-radius:9px; font-size:12.5px; font-weight:700; cursor:pointer;
+  color:var(--text-dim); font-family:'Tajawal',sans-serif; transition: all .15s ease; border:none; background:transparent;
+}
+.auth-mode-tab.active{ background: var(--teal); color:#0B1712; }
+.parent-hint{ font-size:11.5px; color:var(--text-dim); text-align:center; margin-top:2px; line-height:1.7; }
+
+/* ===== Parent portal screen ===== */
+#parentScreen{ min-height:100vh; }
+.parent-header{ display:flex; justify-content:space-between; align-items:center; padding-bottom:20px; border-bottom:1px solid var(--line); margin-bottom:22px; }
+.parent-student-name{ font-size:22px; font-weight:900; }
+.parent-student-sub{ font-size:12.5px; color:var(--text-dim); margin-top:4px; }
+.parent-period-card{ margin-bottom:18px; }
+.parent-today-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:16px; padding-bottom:14px; border-bottom:1px dashed var(--line); }
+.parent-week-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
+.parent-day-cell{ background:var(--panel-2); border:1px solid var(--line); border-radius:10px; padding:10px 6px; text-align:center; }
+.parent-day-cell .pd-name{ font-size:11px; color:var(--text-dim); margin-bottom:6px; }
+.parent-day-cell .pd-icon{ font-size:16px; }
+.parent-day-cell .pd-time{ font-size:9.5px; color:var(--text-dim); margin-top:4px; font-family:'Space Grotesk',sans-serif; direction:ltr; }
+.parent-note{ font-size:11.5px; color:var(--text-dim); margin-top:10px; }
+.parent-empty{ text-align:center; color:var(--text-dim); font-size:13px; padding:40px 0; }
 </style>
 </head>
 <body>
@@ -217,27 +273,70 @@ footer strong{ color:var(--teal); font-weight:700; }
         <circle cx="12" cy="13.5" r="2.2"/>
       </svg>
     </div>
-    <h1 id="authTitle">تسجيل الدخول</h1>
-    <p class="sub" id="authSub">نظام الحضور الذكي — لوحة المعلم</p>
+    <div class="auth-mode-tabs">
+      <button type="button" class="auth-mode-tab active" id="tabTeacher">👩‍🏫 المعلم</button>
+      <button type="button" class="auth-mode-tab" id="tabParent">👪 ولي الأمر</button>
+    </div>
 
-    <form id="authForm">
-      <div class="auth-field">
-        <label>البريد الإلكتروني</label>
-        <input type="email" id="authEmail" autocomplete="email" placeholder="name@example.com" required>
-      </div>
-      <div class="auth-field">
-        <label>كلمة المرور</label>
-        <input type="password" id="authPassword" autocomplete="current-password" required>
-      </div>
-      <div class="auth-field" id="authConfirmField" style="display:none;">
-        <label>تأكيد كلمة المرور</label>
-        <input type="password" id="authPasswordConfirm" autocomplete="new-password">
-      </div>
-      <button type="submit" class="auth-submit" id="authSubmitBtn">دخول</button>
-      <div class="auth-error" id="authError"></div>
-    </form>
-    <div class="auth-switch" id="authSwitchNote"></div>
+    <div id="teacherAuthBox">
+      <h1 id="authTitle">تسجيل الدخول</h1>
+      <p class="sub" id="authSub">نظام الحضور الذكي — لوحة المعلم</p>
+
+      <form id="authForm">
+        <div class="auth-field">
+          <label>البريد الإلكتروني</label>
+          <input type="email" id="authEmail" autocomplete="email" placeholder="name@example.com" required>
+        </div>
+        <div class="auth-field">
+          <label>كلمة المرور</label>
+          <input type="password" id="authPassword" autocomplete="current-password" required>
+        </div>
+        <div class="auth-field" id="authConfirmField" style="display:none;">
+          <label>تأكيد كلمة المرور</label>
+          <input type="password" id="authPasswordConfirm" autocomplete="new-password">
+        </div>
+        <button type="submit" class="auth-submit" id="authSubmitBtn">دخول</button>
+        <div class="auth-error" id="authError"></div>
+      </form>
+      <div class="auth-switch" id="authSwitchNote"></div>
+    </div>
+
+    <div id="parentAuthBox" style="display:none;">
+      <h1>دخول ولي الأمر</h1>
+      <p class="sub">أدخل رقم بطاقة ابنك لعرض حضوره — بدون كلمة مرور</p>
+
+      <form id="parentForm">
+        <div class="auth-field">
+          <label>رقم بطاقة الطالب</label>
+          <input type="text" id="parentCard" placeholder="مثال: A1F2" style="direction:ltr; text-transform:uppercase;" required>
+        </div>
+        <button type="submit" class="auth-submit" id="parentSubmitBtn">عرض الحضور</button>
+        <div class="auth-error" id="parentError"></div>
+      </form>
+      <p class="parent-hint">رقم البطاقة هو نفس رقم البطاقة التي يستخدمها ابنك للحضور في القارئ، ويمكنك الحصول عليه من معلم الفصل.</p>
+    </div>
   </div>
+</div>
+
+<!-- ===== لوحة ولي الأمر ===== -->
+<div class="wrap" id="parentScreen" style="display:none;">
+  <div class="parent-header">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#0B1712" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="7" width="18" height="13" rx="2"/>
+          <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          <circle cx="12" cy="13.5" r="2.2"/>
+        </svg>
+      </div>
+      <div>
+        <div class="parent-student-name" id="parentStudentName">—</div>
+        <div class="parent-student-sub" id="parentStudentSub">لوحة ولي الأمر</div>
+      </div>
+    </div>
+    <button class="logout-btn" id="parentLogoutBtn">🚪 خروج</button>
+  </div>
+  <div id="parentContent"></div>
 </div>
 
 <!-- ===== لوحة المعلم ===== -->
@@ -267,6 +366,8 @@ footer strong{ color:var(--teal); font-weight:700; }
   </header>
 
   <div class="periods-row" id="periodsRow"></div>
+
+  <div class="days-row" id="daysRow"></div>
 
   <div class="stats-row">
     <div class="stat present"><div><div class="n" id="statPresent">0</div><div class="l">حاضر ✅</div></div><div class="stat-icon">✅</div></div>
@@ -332,8 +433,12 @@ footer strong{ color:var(--teal); font-weight:700; }
 
     <div class="card">
       <div class="table-head">
-        <h2 style="margin-bottom:0;"><span class="dot"></span> سجل الحضور — <span id="periodNameLabel"></span></h2>
-        <button class="reset-btn" id="resetBtn">إعادة تعيين هذه الحصة</button>
+        <h2 style="margin-bottom:0;"><span class="dot"></span> سجل الحضور — <span id="periodNameLabel"></span> · <span id="selectedDateLabel"></span></h2>
+        <div class="report-btns">
+          <button class="report-btn" id="exportDayBtn">📄 تقرير اليوم PDF</button>
+          <button class="report-btn" id="exportWeekBtn">📄 تقرير الأسبوع PDF</button>
+          <button class="reset-btn" id="resetBtn">إعادة تعيين هذا اليوم</button>
+        </div>
       </div>
       <table>
         <thead>
@@ -372,6 +477,31 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+// ================================================================
+// ===== مهم: بوابة ولي الأمر تحتاج خطوتين يدويتين في Firebase Console =====
+// 1) فعّل تسجيل الدخول المجهول (Anonymous) من:
+//    Authentication → Sign-in method → Anonymous → تفعيل
+//    (بدونها لن يستطيع ولي الأمر الدخول برقم البطاقة فقط دون كلمة مرور)
+// 2) حدّث قواعد Firestore (Firestore Database → Rules) لتسمح بالقراءة العامة
+//    لمجموعة parentPortal فقط، وتمنع الكتابة إلا من المعلم صاحب البيانات:
+//
+//    rules_version = '2';
+//    service cloud.firestore {
+//      match /databases/{database}/documents {
+//        match /users/{uid}/attendance/{doc} {
+//          allow read, write: if request.auth != null && request.auth.uid == uid;
+//        }
+//        match /devices/{deviceId} {
+//          allow read, write: if request.auth != null;
+//        }
+//        match /parentPortal/{card} {
+//          allow read: if request.auth != null; // يشمل الدخول المجهول لولي الأمر
+//          allow write: if request.auth != null && !request.auth.token.firebase.sign_in_provider.matches('anonymous');
+//        }
+//      }
+//    }
+// ================================================================
+
 let loggedIn = false;
 
 
@@ -393,7 +523,7 @@ let students = defaultStudents();
 let studentSeq = students.length + 1;
 
 // ===== Periods =====
-let periods = [ {id:'p1', name:'الحصة الأولى', onTime:'07:00', lateTime:'07:15', records:{}} ];
+let periods = [ {id:'p1', name:'الحصة الأولى', onTime:'07:00', lateTime:'07:15', recordsByDate:{}} ];
 let periodSeq = 2;
 let currentPeriodId = periods[0].id;
 
@@ -403,19 +533,22 @@ let addingPeriod = false;
 let pendingDeletePeriod = null, pendingDeletePeriodTimer = null;
 let pendingDeleteStudent = null, pendingDeleteStudentTimer = null;
 
-// حفظ كل بيانات التطبيق (الطلاب + الحصص + السجلات) في Firebase — يظهر فورًا على أي جهاز ثاني
+// حفظ كل بيانات التطبيق (الطلاب + الحصص + السجلات اليومية) في Firebase — يظهر فورًا على أي جهاز ثاني
 async function saveAppData(){
   try{
     const serialized = {
       students, studentSeq,
       periodSeq, currentPeriodId,
       periods: periods.map(p => ({
-        ...p,
-        records: Object.fromEntries(Object.entries(p.records).map(([sid, r]) => [sid, {...r, time: r.time.toISOString()}]))
+        id: p.id, name: p.name, onTime: p.onTime, lateTime: p.lateTime,
+        recordsByDate: Object.fromEntries(Object.entries(p.recordsByDate || {}).map(([dateKey, dayRecords]) => [
+          dateKey, Object.fromEntries(Object.entries(dayRecords).map(([sid, r]) => [sid, {...r, time: r.time.toISOString()}]))
+        ]))
       }))
     };
     if(!currentUser) return;
     await db.collection('users').doc(currentUser.uid).collection('attendance').doc('main').set(serialized);
+    syncParentPortal();
   }catch(e){
     console.error('Save failed', e);
     showToast('⚠️ تعذّر حفظ البيانات — تحقق من الاتصال بالإنترنت');
@@ -432,10 +565,21 @@ async function loadAppData(){
     studentSeq = d.studentSeq || (students.length + 1);
     periodSeq = d.periodSeq || 2;
     currentPeriodId = d.currentPeriodId || (d.periods && d.periods[0] && d.periods[0].id) || 'p1';
-    periods = (d.periods && d.periods.length) ? d.periods.map(p => ({
-      ...p,
-      records: Object.fromEntries(Object.entries(p.records || {}).map(([sid, r]) => [sid, {...r, time: new Date(r.time)}]))
-    })) : [{id:'p1', name:'الحصة الأولى', onTime:'07:00', lateTime:'07:15', records:{}}];
+    periods = (d.periods && d.periods.length) ? d.periods.map(p => {
+      let recordsByDate;
+      if(p.recordsByDate){
+        // الصيغة الجديدة: سجلات مقسّمة حسب التاريخ
+        recordsByDate = Object.fromEntries(Object.entries(p.recordsByDate).map(([dateKey, dayRecords]) => [
+          dateKey, Object.fromEntries(Object.entries(dayRecords || {}).map(([sid, r]) => [sid, {...r, time: new Date(r.time)}]))
+        ]));
+      } else if(p.records){
+        // توافق مع الصيغة القديمة (بدون تواريخ): نضع كل السجلات القديمة تحت تاريخ اليوم
+        recordsByDate = { [todayKey()]: Object.fromEntries(Object.entries(p.records).map(([sid, r]) => [sid, {...r, time: new Date(r.time)}])) };
+      } else {
+        recordsByDate = {};
+      }
+      return { id: p.id, name: p.name, onTime: p.onTime, lateTime: p.lateTime, recordsByDate };
+    }) : [{id:'p1', name:'الحصة الأولى', onTime:'07:00', lateTime:'07:15', recordsByDate:{}}];
     return true;
   }catch(e){
     console.error('Load failed', e);
@@ -513,6 +657,8 @@ authForm.addEventListener('submit', async (e)=>{
 async function enterDashboard(user){
   currentUser = user;
   loggedIn = true;
+  selectedDate = todayKey();
+  weekAnchor = startOfWeek(getNow());
   await loadAppData();
   document.getElementById('authScreen').style.display = 'none';
   document.getElementById('dashboardScreen').style.display = 'block';
@@ -534,8 +680,11 @@ document.getElementById('logoutBtn').addEventListener('click', async ()=>{
   await auth.signOut();
 });
 
+let parentMode = false;
+
 auth.onAuthStateChanged(async user => {
-  if(user){
+  if(parentMode) return; // جلسة ولي الأمر (بدون كلمة مرور) تُدار بشكل منفصل ولا تفتح لوحة المعلم
+  if(user && !user.isAnonymous){
     await enterDashboard(user);
   } else {
     leaveDashboard();
@@ -543,10 +692,175 @@ auth.onAuthStateChanged(async user => {
   }
 });
 
+// ===== تبديل تبويب المعلم / ولي الأمر في شاشة الدخول =====
+const tabTeacher = document.getElementById('tabTeacher');
+const tabParent = document.getElementById('tabParent');
+const teacherAuthBox = document.getElementById('teacherAuthBox');
+const parentAuthBox = document.getElementById('parentAuthBox');
+tabTeacher.addEventListener('click', ()=>{
+  tabTeacher.classList.add('active'); tabParent.classList.remove('active');
+  teacherAuthBox.style.display = 'block'; parentAuthBox.style.display = 'none';
+});
+tabParent.addEventListener('click', ()=>{
+  tabParent.classList.add('active'); tabTeacher.classList.remove('active');
+  parentAuthBox.style.display = 'block'; teacherAuthBox.style.display = 'none';
+});
+
+// ===== دخول ولي الأمر برقم البطاقة فقط (بدون كلمة مرور) =====
+const parentForm = document.getElementById('parentForm');
+const parentError = document.getElementById('parentError');
+const parentSubmitBtn = document.getElementById('parentSubmitBtn');
+
+parentForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  parentError.textContent = '';
+  const card = document.getElementById('parentCard').value.trim().toUpperCase().replace(/\s+/g,'');
+  if(!card){ parentError.textContent = 'أدخل رقم بطاقة الطالب'; return; }
+
+  parentSubmitBtn.disabled = true;
+  parentSubmitBtn.textContent = 'جاري البحث...';
+  parentMode = true;
+  try{
+    if(!auth.currentUser){ await auth.signInAnonymously(); }
+    const snap = await db.collection('parentPortal').doc(card).get();
+    if(!snap.exists){
+      parentError.textContent = 'لم يتم العثور على طالب بهذه البطاقة. تأكد من الرقم أو راجع معلم الفصل.';
+      parentMode = false;
+      return;
+    }
+    renderParentScreen(snap.data());
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('parentScreen').style.display = 'block';
+    document.getElementById('parentForm').reset();
+  }catch(err){
+    console.error(err);
+    parentError.textContent = 'تعذّر الاتصال بالخادم — تحقق من الاتصال بالإنترنت';
+    parentMode = false;
+  }finally{
+    parentSubmitBtn.disabled = false;
+    parentSubmitBtn.textContent = 'عرض الحضور';
+  }
+});
+
+document.getElementById('parentLogoutBtn').addEventListener('click', async ()=>{
+  try{ await auth.signOut(); }catch(err){}
+  parentMode = false;
+  document.getElementById('parentScreen').style.display = 'none';
+  document.getElementById('authScreen').style.display = 'flex';
+  setAuthMode('login');
+});
+
+// نبني لوحة ولي الأمر: اسم الطالب + حضوره اليومي والأسبوعي لكل حصة + ملاحظات (أعذار)
+function renderParentScreen(data){
+  document.getElementById('parentStudentName').textContent = data.name || '—';
+  document.getElementById('parentStudentSub').textContent = 'لوحة ولي الأمر — حضور الطالب';
+
+  const days = weekDates(startOfWeek(getNow()));
+  const todK = todayKey();
+  const content = document.getElementById('parentContent');
+  const periodsData = data.periods || [];
+
+  if(!periodsData.length){
+    content.innerHTML = `<div class="parent-empty">لا توجد سجلات حضور بعد لهذا الطالب.</div>`;
+    return;
+  }
+
+  content.innerHTML = periodsData.map(p=>{
+    const dayRecs = p.days || {};
+    const todayRec = dayRecs[todK];
+    const todayHtml = todayRec
+      ? `<div><strong>${statusIcon(todayRec.status)} ${statusLabel(todayRec.status)}</strong><div class="parent-note">الوقت: ${fmtTime(new Date(todayRec.time))}${todayRec.excuse ? ' · ملاحظة: ' + todayRec.excuse : ''}</div></div>`
+      : `<div><strong>❌ لم يسجَّل حضور بعد اليوم</strong></div>`;
+
+    const weekCells = days.map(d=>{
+      const key = ymd(d);
+      const rec = dayRecs[key];
+      const icon = rec ? statusIcon(rec.status) : '—';
+      const time = rec ? fmtTime(new Date(rec.time)) : '';
+      return `<div class="parent-day-cell"><div class="pd-name">${ARABIC_DAY_SHORT[d.getDay()]}</div><div class="pd-icon">${icon}</div><div class="pd-time">${time}</div></div>`;
+    }).join('');
+
+    return `<div class="card parent-period-card">
+      <h2><span class="dot"></span> ${p.name}</h2>
+      <div class="parent-today-row">${todayHtml}</div>
+      <div class="parent-week-grid">${weekCells}</div>
+    </div>`;
+  }).join('');
+}
+
+// نحدّث سجل كل طالب في مجموعة عامة (parentPortal) يقدر ولي الأمر يقرأها برقم البطاقة فقط.
+// ملاحظة مهمة: هذا يتطلب قاعدة Firestore تسمح بالقراءة من هذه المجموعة لأي مستخدم مسجّل حتى لو
+// دخوله مجهول (Anonymous)، وتمنع الكتابة إلا من حساب المعلم صاحب البيانات. راجع التعليق في
+// أعلى قسم Firebase بالملف لمثال على القواعد المطلوبة.
+async function syncParentPortal(){
+  try{
+    if(!currentUser) return;
+    const writes = students.map(s=>{
+      const periodsForStudent = periods.map(p=>{
+        const daysForStudent = {};
+        Object.entries(p.recordsByDate || {}).forEach(([dateKey, dayRecords])=>{
+          const rec = dayRecords[s.id];
+          if(rec) daysForStudent[dateKey] = {status: rec.status, time: rec.time.toISOString(), excuse: rec.excuse || null};
+        });
+        return {id: p.id, name: p.name, days: daysForStudent};
+      });
+      return db.collection('parentPortal').doc(s.card.toUpperCase()).set({
+        name: s.name,
+        teacherUid: currentUser.uid,
+        updatedAt: new Date().toISOString(),
+        periods: periodsForStudent
+      });
+    });
+    await Promise.all(writes);
+  }catch(e){
+    console.error('Parent portal sync failed', e);
+  }
+}
+
 function currentPeriod(){ return periods.find(p => p.id === currentPeriodId); }
 
 let simOffsetMs = 0;
 function getNow(){ return new Date(Date.now() + simOffsetMs); }
+
+// ===== أدوات الأيام والأسابيع =====
+const ARABIC_DAY_NAMES = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const ARABIC_DAY_SHORT = ['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
+
+function ymd(d){
+  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function todayKey(){ return ymd(getNow()); }
+
+// بداية الأسبوع = يوم السبت من نفس الأسبوع (الأسبوع العربي يبدأ بالسبت)
+function startOfWeek(d){
+  const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const dow = date.getDay(); // 0=Sunday ... 6=Saturday
+  const diff = (dow + 1) % 7; // عدد الأيام منذ آخر سبت
+  date.setDate(date.getDate() - diff);
+  return date;
+}
+function weekDates(weekStart){
+  return Array.from({length:7}, (_,i)=>{
+    const d = new Date(weekStart);
+    d.setDate(d.getDate()+i);
+    return d;
+  });
+}
+function fmtShortDate(d){ return `${d.getDate()}/${d.getMonth()+1}`; }
+
+let selectedDate = todayKey();
+let weekAnchor = startOfWeek(getNow());
+
+// يرجع سجلات يوم معيّن من حصة معيّنة. لو create=true وما فيه سجلات لهذا اليوم، ينشئ كائن فاضي ويربطه بالحصة.
+function getDayRecords(period, dateKey, create){
+  if(!period.recordsByDate) period.recordsByDate = {};
+  if(!period.recordsByDate[dateKey]){
+    if(!create) return {};
+    period.recordsByDate[dateKey] = {};
+  }
+  return period.recordsByDate[dateKey];
+}
 
 // 12-hour Arabic-friendly formatter (ص/م), Western digits for consistency with the rest of the UI
 function pad(n){ return n.toString().padStart(2,'0'); }
@@ -653,12 +967,72 @@ function renderPeriodTabs(){
   }
 
   document.getElementById('periodNameLabel').textContent = currentPeriod().name;
+  const dateLabelEl = document.getElementById('selectedDateLabel');
+  if(dateLabelEl) dateLabelEl.textContent = selectedDate;
+}
+
+// ===== أيام الأسبوع (تنقّل بين الأيام + عرض السجل المحفوظ لكل يوم) =====
+function renderDayTabs(){
+  const row = document.getElementById('daysRow');
+  if(!row) return;
+  row.innerHTML = '';
+
+  const prevBtn = document.createElement('div');
+  prevBtn.className = 'week-nav-btn';
+  prevBtn.textContent = '‹';
+  prevBtn.title = 'الأسبوع السابق';
+  prevBtn.addEventListener('click', ()=>{
+    const d = new Date(weekAnchor); d.setDate(d.getDate()-7); weekAnchor = d;
+    renderDayTabs();
+  });
+  row.appendChild(prevBtn);
+
+  const days = weekDates(weekAnchor);
+  const todK = todayKey();
+  days.forEach(d=>{
+    const key = ymd(d);
+    const tab = document.createElement('div');
+    tab.className = 'day-tab' + (key === selectedDate ? ' active' : '') + (key === todK ? ' today' : '');
+    tab.dataset.day = key;
+    tab.innerHTML = `<span class="dname">${ARABIC_DAY_SHORT[d.getDay()]}</span><span class="dnum">${fmtShortDate(d)}</span>`;
+    tab.addEventListener('click', ()=>{
+      selectedDate = key;
+      renderDayTabs();
+      renderTable();
+      updateStats();
+      renderPeriodTabs();
+    });
+    row.appendChild(tab);
+  });
+
+  const nextBtn = document.createElement('div');
+  nextBtn.className = 'week-nav-btn';
+  nextBtn.textContent = '›';
+  nextBtn.title = 'الأسبوع القادم';
+  nextBtn.addEventListener('click', ()=>{
+    const d = new Date(weekAnchor); d.setDate(d.getDate()+7); weekAnchor = d;
+    renderDayTabs();
+  });
+  row.appendChild(nextBtn);
+
+  const todayBtn = document.createElement('div');
+  todayBtn.className = 'day-today-btn';
+  todayBtn.textContent = 'اليوم';
+  todayBtn.addEventListener('click', ()=>{
+    weekAnchor = startOfWeek(getNow());
+    selectedDate = todayKey();
+    renderDayTabs();
+    renderTable();
+    updateStats();
+    renderPeriodTabs();
+  });
+  row.appendChild(todayBtn);
 }
 
 function confirmAddPeriod(){
   const input = document.getElementById('newPeriodInput');
   const name = (input && input.value.trim()) || ('الحصة ' + periodSeq);
-  const p = {id:'p'+periodSeq, name, onTime:'07:00', lateTime:'07:15', records:{}};
+  const p = {id:'p'+periodSeq, name, onTime:'07:00', lateTime:'07:15', recordsByDate:{}};
   periodSeq++;
   periods.push(p);
   currentPeriodId = p.id;
@@ -807,7 +1181,7 @@ function renderRoster(){
       pendingDeleteStudent = null;
       const st = students.find(x=>x.id===id);
       students = students.filter(x=>x.id!==id);
-      periods.forEach(p=> delete p.records[id]);
+      periods.forEach(p=> Object.values(p.recordsByDate || {}).forEach(dayRecords => delete dayRecords[id]));
       renderAll();
       saveAppData();
       showToast('تم حذف "'+st.name+'"');
@@ -846,7 +1220,7 @@ document.getElementById('addStudentForm').addEventListener('submit', e=>{
 // ===== Table =====
 function renderTable(){
   const tableBody = document.getElementById('tableBody');
-  const records = currentPeriod().records;
+  const records = getDayRecords(currentPeriod(), selectedDate, false);
   tableBody.innerHTML = '';
   students.forEach(s=>{
     const rec = records[s.id];
@@ -890,14 +1264,14 @@ function renderTable(){
   }));
   tableBody.querySelectorAll('[data-excuse-save]').forEach(b=> b.addEventListener('click', ()=>{
     const input = tableBody.querySelector('[data-excuse-input="'+b.dataset.excuseSave+'"]');
-    currentPeriod().records[b.dataset.excuseSave].excuse = input.value.trim();
+    getDayRecords(currentPeriod(), selectedDate, true)[b.dataset.excuseSave].excuse = input.value.trim();
     editingExcuseFor = null;
     renderTable();
     saveAppData();
     showToast('تم حفظ عذر التأخير');
   }));
   tableBody.querySelectorAll('[data-excuse-clear]').forEach(b=> b.addEventListener('click', ()=>{
-    currentPeriod().records[b.dataset.excuseClear].excuse = null;
+    getDayRecords(currentPeriod(), selectedDate, true)[b.dataset.excuseClear].excuse = null;
     renderTable();
     saveAppData();
   }));
@@ -906,7 +1280,7 @@ function renderTable(){
 }
 
 function updateStats(){
-  const records = currentPeriod().records;
+  const records = getDayRecords(currentPeriod(), selectedDate, false);
   let present=0, late=0, absentScanned=0;
   students.forEach(s=>{
     const rec = records[s.id];
@@ -924,9 +1298,11 @@ function handleScan(studentId, fromDevice){
   const s = students.find(x=>x.id===studentId);
   const period = currentPeriod();
   const now = getNow();
+  const todK = todayKey();
+  const todayRecords = getDayRecords(period, todK, true);
 
-  if(period.records[studentId]){
-    const rec = period.records[studentId];
+  if(todayRecords[studentId]){
+    const rec = todayRecords[studentId];
     showScanResult(s, 'dup', rec.time, true);
     beep(220, 90, 'square'); setTimeout(()=>beep(220,90,'square'), 140);
     showToast(`⚠️ ${s.name} مسجَّل مسبقًا الساعة ${fmtTime(rec.time)}`);
@@ -935,7 +1311,7 @@ function handleScan(studentId, fromDevice){
   }
 
   const status = determineStatus(now, period);
-  period.records[studentId] = {status, time: now, excuse: null};
+  todayRecords[studentId] = {status, time: now, excuse: null};
 
   showScanResult(s, status, now, false);
   if(status==='present') beep(988, 130, 'sine');
@@ -951,7 +1327,8 @@ function handleScan(studentId, fromDevice){
             : `❌ ${s.name} تجاوز فترة السماح وسُجّل غائبًا — ${fmtTime(now)}`;
   showToast(msg);
 
-  renderTable();
+  // نحدّث الجدول فقط إذا كان المعلم يعرض يوم اليوم حاليًا (تجنّبًا لتغيير سجل يوم آخر يتصفّحه)
+  if(selectedDate === todK){ renderTable(); }
   saveAppData();
 }
 
@@ -990,14 +1367,97 @@ function showScanResult(s, status, time, isDup){
 
 // ===== Reset =====
 document.getElementById('resetBtn').addEventListener('click', ()=>{
-  currentPeriod().records = {};
+  currentPeriod().recordsByDate[selectedDate] = {};
   document.getElementById('idleMsg').style.display = 'flex';
   document.getElementById('resultBox').style.display = 'none';
   document.getElementById('scannerBox').classList.remove('flash-present','flash-late','flash-absent');
   renderAll();
   saveAppData();
-  showToast('تمت إعادة تعيين سجل هذه الحصة');
+  showToast('تمت إعادة تعيين سجل يوم ' + selectedDate);
 });
+
+// ===== تصدير تقارير PDF (عبر نافذة طباعة المتصفح) =====
+document.getElementById('exportDayBtn').addEventListener('click', exportDayReport);
+document.getElementById('exportWeekBtn').addEventListener('click', exportWeekReport);
+
+function statusLabel(status){
+  if(status==='present') return 'حاضر ✅';
+  if(status==='late') return 'متأخر 🟡';
+  if(status==='absent') return 'غائب (تجاوز فترة السماح) ❌';
+  return 'غائب ❌';
+}
+function statusIcon(status){
+  if(status==='present') return '✅';
+  if(status==='late') return '🟡';
+  return '❌';
+}
+
+function openPrintWindow(title, bodyHtml){
+  const win = window.open('', '_blank');
+  if(!win){ showToast('⚠️ يرجى السماح بالنوافذ المنبثقة لتصدير التقرير'); return; }
+  win.document.write(`<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>${title}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap');
+*{box-sizing:border-box;}
+body{ font-family:'Tajawal',sans-serif; color:#10151B; padding:28px; direction:rtl; }
+h1{ font-size:20px; margin-bottom:4px; }
+.sub{ color:#666; font-size:12.5px; margin-bottom:22px; }
+table{ width:100%; border-collapse:collapse; margin-bottom:24px; }
+th,td{ border:1px solid #ccc; padding:8px 10px; font-size:12.5px; text-align:right; }
+th{ background:#f0f0f0; }
+h2{ font-size:15px; margin:22px 0 10px; border-bottom:2px solid #22B8A0; padding-bottom:6px; }
+.foot{ margin-top:30px; font-size:11px; color:#888; text-align:center; }
+@media print{ body{ padding:8mm; } }
+</style></head><body>${bodyHtml}
+<div class="foot">نظام الحضور الذكي — صنع بواسطة حاتم</div>
+</body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(()=>{ win.print(); }, 400);
+}
+
+function exportDayReport(){
+  const d = new Date(selectedDate);
+  const dateReadable = fmtDate(d);
+  let body = `<h1>تقرير الحضور اليومي</h1><div class="sub">التاريخ: ${dateReadable} (${selectedDate})</div>`;
+  periods.forEach(p=>{
+    const dayRecords = getDayRecords(p, selectedDate, false);
+    body += `<h2>${p.name}</h2><table><thead><tr><th>الطالب</th><th>رقم البطاقة</th><th>الحالة</th><th>الوقت</th><th>ملاحظات</th></tr></thead><tbody>`;
+    students.forEach(s=>{
+      const rec = dayRecords[s.id];
+      const status = rec ? statusLabel(rec.status) : 'غائب ❌';
+      const time = rec ? fmtTime(rec.time) : '—';
+      const excuse = rec && rec.excuse ? rec.excuse : '—';
+      body += `<tr><td>${s.name}</td><td>${s.card}</td><td>${status}</td><td>${time}</td><td>${excuse}</td></tr>`;
+    });
+    body += `</tbody></table>`;
+  });
+  openPrintWindow('تقرير الحضور اليومي — ' + selectedDate, body);
+}
+
+function exportWeekReport(){
+  const days = weekDates(weekAnchor);
+  const period = currentPeriod();
+  const rangeLabel = `${fmtShortDate(days[0])} — ${fmtShortDate(days[6])}`;
+  let body = `<h1>تقرير الحضور الأسبوعي — ${period.name}</h1><div class="sub">الأسبوع: ${rangeLabel}</div>`;
+  body += `<table><thead><tr><th>الطالب</th>` + days.map(d=>`<th>${ARABIC_DAY_SHORT[d.getDay()]}<br>${fmtShortDate(d)}</th>`).join('') + `<th>حاضر</th><th>متأخر</th><th>غائب</th></tr></thead><tbody>`;
+  students.forEach(s=>{
+    let pCount=0, lCount=0, aCount=0;
+    const cells = days.map(d=>{
+      const key = ymd(d);
+      const rec = getDayRecords(period, key, false)[s.id];
+      if(!rec){ aCount++; return '❌'; }
+      if(rec.status==='present') pCount++;
+      else if(rec.status==='late') lCount++;
+      else aCount++;
+      return statusIcon(rec.status) + (rec.excuse ? ` <br><small>${rec.excuse}</small>` : '');
+    });
+    body += `<tr><td>${s.name}</td>` + cells.map(c=>`<td>${c}</td>`).join('') + `<td>${pCount}</td><td>${lCount}</td><td>${aCount}</td></tr>`;
+  });
+  body += `</tbody></table>`;
+  openPrintWindow('تقرير الحضور الأسبوعي', body);
+}
 
 // ===== Live clock =====
 function tickClock(){
@@ -1009,6 +1469,7 @@ setInterval(tickClock, 1000);
 
 function renderAll(){
   renderPeriodTabs();
+  renderDayTabs();
   renderRoster();
   renderTable();
 }
