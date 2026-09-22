@@ -20,6 +20,19 @@
   --text:#EDEAE0;
   --text-dim:#9BA3AC;
 }
+:root[data-theme="light"]{
+  --ink:#F4F6F5;
+  --panel:#FFFFFF;
+  --panel-2:#F0F2F1;
+  --line: rgba(16,21,27,0.10);
+  --teal:#15997F;
+  --teal-dim: rgba(21,153,127,0.12);
+  --present:#1E8F63;
+  --late:#B5790A;
+  --absent:#C7431E;
+  --text:#10151B;
+  --text-dim:#5B6470;
+}
 *{box-sizing:border-box; margin:0; padding:0;}
 html,body{ background: var(--ink); color: var(--text); font-family: 'Tajawal', sans-serif; min-height:100vh; }
 .num{ font-family:'Space Grotesk', sans-serif; font-feature-settings: "tnum"; }
@@ -132,7 +145,7 @@ header{ display:flex; justify-content:space-between; align-items:flex-end; flex-
 .add-student-form button:hover{ opacity:.9; }
 
 /* ===== Stats ===== */
-.stats-row{ display:grid; grid-template-columns: repeat(3,1fr); gap:12px; margin-bottom:20px; }
+.stats-row{ display:grid; grid-template-columns: repeat(4,1fr); gap:12px; margin-bottom:20px; }
 .stat{ background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 18px; display:flex; align-items:center; justify-content:space-between; }
 .stat .n{ font-size:28px; font-weight:700; font-family:'Space Grotesk',sans-serif; }
 .stat .l{ font-size:12.5px; color:var(--text-dim); margin-top:2px; }
@@ -239,9 +252,11 @@ footer strong{ color:var(--teal); font-weight:700; }
 /* ===== Auth mode tabs (teacher / parent) ===== */
 .auth-mode-tabs{ display:flex; gap:6px; background:var(--panel-2); border-radius:12px; padding:4px; margin-bottom:22px; }
 .auth-mode-tab{
-  flex:1; text-align:center; padding:9px 6px; border-radius:9px; font-size:12.5px; font-weight:700; cursor:pointer;
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
+  text-align:center; padding:11px 6px; border-radius:9px; font-size:12px; font-weight:700; cursor:pointer;
   color:var(--text-dim); font-family:'Tajawal',sans-serif; transition: all .15s ease; border:none; background:transparent;
 }
+.auth-mode-tab .tab-icon{ width:22px; height:22px; color:inherit; }
 .auth-mode-tab.active{ background: var(--teal); color:#0B1712; }
 .parent-hint{ font-size:11.5px; color:var(--text-dim); text-align:center; margin-top:2px; line-height:1.7; }
 
@@ -274,6 +289,171 @@ footer strong{ color:var(--teal); font-weight:700; }
 /* ===== Excused absence badge/button ===== */
 .badge.excused{ background: rgba(140,140,255,.14); color:#9c9cff; }
 .excuse-btn.excused-btn{ border-color: rgba(140,140,255,.5); color:#9c9cff; }
+
+/* ===== Theme toggle ===== */
+.theme-toggle-btn{
+  width:38px;height:38px;border-radius:50%; background:var(--panel); border:1px solid var(--line); color:var(--text-dim);
+  font-size:16px; cursor:pointer; display:flex;align-items:center;justify-content:center; flex-shrink:0; transition: all .15s ease;
+}
+.theme-toggle-btn:hover{ border-color:var(--teal); color:var(--teal); }
+
+/* ===== Global search ===== */
+.search-bar{ position:relative; flex:1; min-width:180px; max-width:320px; }
+.search-bar input{
+  width:100%; background:var(--panel); border:1px solid var(--line); border-radius:11px; padding:10px 14px 10px 36px;
+  color:var(--text); font-family:'Tajawal',sans-serif; font-size:13px; outline:none;
+}
+.search-bar input:focus{ border-color:var(--teal); }
+.search-bar::before{ content:'🔍'; position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:12px; opacity:.6; }
+.search-results{
+  position:absolute; top:calc(100% + 6px); right:0; left:0; background:var(--panel); border:1px solid var(--line); border-radius:12px;
+  z-index:20; max-height:280px; overflow-y:auto; display:none; box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+.search-results.show{ display:block; }
+.search-result-item{ padding:10px 14px; border-bottom:1px solid var(--line); cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.search-result-item:last-child{ border-bottom:none; }
+.search-result-item:hover{ background:var(--panel-2); }
+.search-result-item .sr-name{ font-size:13px; font-weight:700; }
+.search-result-item .sr-meta{ font-size:11px; color:var(--text-dim); direction:ltr; }
+.search-result-item .sr-pct{ font-size:12px; font-weight:700; color:var(--teal); font-family:'Space Grotesk',sans-serif; }
+.search-empty{ padding:14px; text-align:center; font-size:12.5px; color:var(--text-dim); }
+
+/* ===== Activity log ===== */
+.activity-list{ display:flex; flex-direction:column; gap:2px; max-height:340px; overflow-y:auto; }
+.activity-item{ display:flex; align-items:center; gap:10px; padding:9px 4px; border-bottom:1px solid var(--line); font-size:12.5px; }
+.activity-item:last-child{ border-bottom:none; }
+.activity-item .ai-icon{ font-size:15px; flex-shrink:0; }
+.activity-item .ai-name{ font-weight:700; flex:1; }
+.activity-item .ai-meta{ color:var(--text-dim); font-size:11px; text-align:left; direction:ltr; flex-shrink:0; }
+.activity-empty{ text-align:center; color:var(--text-dim); font-size:12.5px; padding:20px 0; }
+
+/* ===== Ranking table ===== */
+.ranking-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+.ranking-table th{ text-align:right; color:var(--text-dim); font-weight:700; padding:8px 6px; border-bottom:1px solid var(--line); font-size:11.5px; }
+.ranking-table td{ padding:9px 6px; border-bottom:1px solid var(--line); }
+.ranking-table tr:last-child td{ border-bottom:none; }
+.ranking-rank{ font-family:'Space Grotesk',sans-serif; color:var(--text-dim); width:22px; }
+.ranking-bar-wrap{ background:var(--panel-2); border-radius:6px; height:7px; width:70px; overflow:hidden; }
+.ranking-bar{ height:100%; background:var(--teal); border-radius:6px; }
+.ranking-pct{ font-family:'Space Grotesk',sans-serif; font-weight:700; }
+
+/* ===== Mini chart ===== */
+.chart-wrap{ width:100%; overflow-x:auto; }
+.chart-wrap svg{ display:block; }
+.chart-bar-label{ font-size:9px; fill:var(--text-dim); font-family:'Tajawal',sans-serif; }
+
+/* ===== Device status ===== */
+.device-status-row{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:10px; }
+.device-badge{ display:flex; align-items:center; gap:6px; font-size:12.5px; padding:7px 12px; border-radius:10px; background:var(--panel-2); }
+.device-badge.online{ color:var(--present); }
+.device-badge.offline{ color:var(--absent); }
+.signal-bars{ display:flex; align-items:flex-end; gap:2px; height:12px; }
+.signal-bars .bar{ width:3px; background:var(--line); border-radius:1px; }
+.signal-bars .bar:nth-child(1){ height:25%; } .signal-bars .bar:nth-child(2){ height:50%; }
+.signal-bars .bar:nth-child(3){ height:75%; } .signal-bars .bar:nth-child(4){ height:100%; }
+.signal-bars .bar.on{ background:var(--teal); }
+.resync-btn{
+  background:transparent; border:1px solid var(--line); color:var(--text-dim); padding:7px 14px; border-radius:9px;
+  font-family:'Tajawal',sans-serif; font-size:12px; cursor:pointer; transition: all .15s ease;
+}
+.resync-btn:hover{ border-color:var(--teal); color:var(--teal); }
+
+/* ===== Settings panel ===== */
+.settings-field{ margin-bottom:12px; }
+.settings-field label{ display:block; font-size:11.5px; color:var(--text-dim); margin-bottom:6px; }
+.settings-field input{
+  width:100%; background:var(--panel-2); border:1px solid var(--line); border-radius:9px; padding:10px 12px;
+  color:var(--text); font-family:'Tajawal',sans-serif; font-size:13px; outline:none;
+}
+.settings-field input:focus{ border-color:var(--teal); }
+.settings-field .readonly-note{ font-size:10.5px; color:var(--text-dim); margin-top:4px; }
+.save-settings-btn{
+  background:var(--teal); color:#0B1712; border:none; border-radius:9px; padding:10px 18px; font-weight:700;
+  font-family:'Tajawal',sans-serif; font-size:12.5px; cursor:pointer; margin-top:4px;
+}
+
+/* ===== Enroll-card mode ===== */
+.enroll-active-banner{
+  display:none; align-items:center; gap:8px; background: var(--teal-dim); border:1px solid var(--teal); color:var(--teal);
+  padding:10px 12px; border-radius:10px; font-size:12.5px; margin-bottom:10px;
+}
+.enroll-active-banner.show{ display:flex; }
+.enroll-active-banner .spinner{ width:12px;height:12px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation: spin .8s linear infinite; flex-shrink:0; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+.enroll-toggle-btn{
+  background:transparent; border:1px dashed var(--teal); color:var(--teal); padding:9px 12px; border-radius:9px;
+  font-family:'Tajawal',sans-serif; font-size:12px; cursor:pointer; white-space:nowrap;
+}
+
+/* ===== Student profile popup (from search / ranking) ===== */
+.student-profile-overlay{
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:100; align-items:center; justify-content:center; padding:20px;
+}
+.student-profile-overlay.show{ display:flex; }
+.student-profile-box{ background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:24px; max-width:420px; width:100%; max-height:85vh; overflow-y:auto; }
+.student-profile-box h3{ font-size:17px; margin-bottom:4px; }
+.student-profile-box .sp-close{ float:left; cursor:pointer; color:var(--text-dim); font-size:20px; }
+.sp-stat-row{ display:flex; gap:10px; margin:16px 0; }
+.sp-stat{ flex:1; background:var(--panel-2); border-radius:10px; padding:10px; text-align:center; }
+.sp-stat .n{ font-size:19px; font-weight:900; font-family:'Space Grotesk',sans-serif; }
+.sp-stat .l{ font-size:10.5px; color:var(--text-dim); margin-top:2px; }
+.sp-actions{ display:flex; gap:8px; margin-top:14px; }
+.sp-actions button{
+  flex:1; background:transparent; border:1px solid var(--line); color:var(--text-dim); padding:9px; border-radius:9px;
+  font-family:'Tajawal',sans-serif; font-size:12px; cursor:pointer;
+}
+.sp-actions button:hover{ border-color:var(--teal); color:var(--teal); }
+
+.sp-notes-section{ margin-top:18px; border-top:1px solid var(--line); padding-top:14px; }
+.sp-notes-section h4{ font-size:12.5px; color:var(--text-dim); margin-bottom:10px; font-weight:700; }
+.sp-notes-list{ display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto; margin-bottom:12px; }
+.sp-note-item{ background:var(--panel-2); border-radius:10px; padding:9px 11px; font-size:12.5px; position:relative; }
+.sp-note-item .sp-note-date{ font-size:10px; color:var(--text-dim); margin-bottom:3px; direction:ltr; text-align:left; }
+.sp-note-item .sp-note-del{ position:absolute; top:8px; left:9px; cursor:pointer; color:var(--text-dim); font-size:12px; }
+.sp-note-item .sp-note-del:hover{ color:var(--absent); }
+.sp-notes-empty{ font-size:12px; color:var(--text-dim); text-align:center; padding:10px 0; }
+.sp-note-add{ display:flex; flex-direction:column; gap:8px; }
+.sp-note-add textarea{
+  width:100%; background:var(--panel-2); border:1px solid var(--line); border-radius:9px; padding:9px 11px;
+  color:var(--text); font-family:'Tajawal',sans-serif; font-size:12.5px; outline:none; resize:vertical;
+}
+.sp-note-add textarea:focus{ border-color:var(--teal); }
+.sp-note-add button{
+  align-self:flex-end; background:var(--teal); color:#0B1712; border:none; border-radius:9px; padding:8px 16px;
+  font-family:'Tajawal',sans-serif; font-size:12px; font-weight:700; cursor:pointer;
+}
+
+/* ===== Hamburger + nav drawer ===== */
+.hamburger-btn{
+  display:flex; flex-direction:column; justify-content:center; gap:4px; width:38px; height:38px; border-radius:10px;
+  background:var(--panel); border:1px solid var(--line); cursor:pointer; flex-shrink:0; padding:0 8px;
+}
+.hamburger-btn span{ display:block; height:2px; width:100%; background:var(--text-dim); border-radius:2px; }
+.hamburger-btn:hover span{ background:var(--teal); }
+
+.nav-drawer-overlay{
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:199;
+}
+.nav-drawer-overlay.show{ display:block; }
+.nav-drawer{
+  position:fixed; top:0; right:0; bottom:0; width:270px; max-width:82vw; background:var(--panel); border-left:1px solid var(--line);
+  z-index:200; transform:translateX(100%); transition: transform .22s ease; display:flex; flex-direction:column; padding:18px 14px;
+  overflow-y:auto;
+}
+.nav-drawer.show{ transform:translateX(0); }
+.nav-drawer-head{ display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:14px; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid var(--line); }
+.nav-drawer-close{ cursor:pointer; color:var(--text-dim); font-size:18px; }
+.nav-drawer-link{
+  display:block; padding:11px 10px; border-radius:9px; color:var(--text); text-decoration:none; font-size:13px;
+  font-family:'Tajawal',sans-serif; margin-bottom:2px; transition: background .15s ease;
+}
+.nav-drawer-link:hover{ background:var(--panel-2); color:var(--teal); }
+.nav-drawer-sep{ height:1px; background:var(--line); margin:12px 0; }
+.nav-drawer-action{
+  display:block; width:100%; text-align:right; background:transparent; border:1px solid var(--line); color:var(--text-dim);
+  padding:10px 12px; border-radius:9px; font-family:'Tajawal',sans-serif; font-size:12.5px; cursor:pointer; margin-bottom:8px;
+}
+.nav-drawer-action:hover{ border-color:var(--teal); color:var(--teal); }
 </style>
 </head>
 <body>
@@ -289,8 +469,14 @@ footer strong{ color:var(--teal); font-weight:700; }
       </svg>
     </div>
     <div class="auth-mode-tabs">
-      <button type="button" class="auth-mode-tab active" id="tabTeacher">👩‍🏫 المعلم</button>
-      <button type="button" class="auth-mode-tab" id="tabParent">👪 ولي الأمر</button>
+      <button type="button" class="auth-mode-tab active" id="tabTeacher">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.5" r="3.2"/><path d="M5 20.5c0-3.6 3.1-6.2 7-6.2s7 2.6 7 6.2"/><path d="M4.5 8.2 12 5l7.5 3.2-7.5 3.2-7.5-3.2Z"/><path d="M8 9.6v3.1c0 1 1.8 1.8 4 1.8s4-.8 4-1.8V9.6"/></svg>
+        المعلم
+      </button>
+      <button type="button" class="auth-mode-tab" id="tabParent">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3.5 20c0-3 2.5-5.4 5.5-5.4s5.5 2.4 5.5 5.4"/><circle cx="17.5" cy="8.2" r="2.3"/><path d="M14.8 20c.2-2.4 1.8-4.2 3.9-4.2 1.8 0 3.3 1.3 3.8 3.1"/></svg>
+        ولي الأمر
+      </button>
     </div>
 
     <div id="teacherAuthBox">
@@ -358,6 +544,9 @@ footer strong{ color:var(--teal); font-weight:700; }
 <div class="wrap" id="dashboardScreen" style="display:none;">
 
   <header>
+    <button class="hamburger-btn" id="hamburgerBtn" title="القائمة">
+      <span></span><span></span><span></span>
+    </button>
     <div class="brand">
       <div class="brand-mark">
         <svg viewBox="0 0 24 24" fill="none" stroke="#0B1712" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -371,7 +560,12 @@ footer strong{ color:var(--teal); font-weight:700; }
         <p>لوحة المعلم · صنع بواسطة حاتم آل حرشان</p>
       </div>
     </div>
+    <div class="search-bar" id="globalSearchWrap">
+      <input type="text" id="globalSearchInput" placeholder="بحث بالاسم أو رقم البطاقة..." autocomplete="off">
+      <div class="search-results" id="globalSearchResults"></div>
+    </div>
     <div class="header-right">
+      <button class="theme-toggle-btn" id="themeToggleBtn" title="تبديل المظهر">🌙</button>
       <div class="clock-box">
         <div class="time num" id="liveClock">--:--:-- --</div>
         <div class="date" id="liveDate">—</div>
@@ -379,6 +573,26 @@ footer strong{ color:var(--teal); font-weight:700; }
       <button class="logout-btn" id="logoutBtn">🚪 تسجيل الخروج</button>
     </div>
   </header>
+
+  <div class="nav-drawer-overlay" id="navDrawerOverlay"></div>
+  <nav class="nav-drawer" id="navDrawer">
+    <div class="nav-drawer-head">
+      <span>القائمة</span>
+      <span class="nav-drawer-close" id="navDrawerClose">✕</span>
+    </div>
+    <a href="#section-table" class="nav-drawer-link" data-nav-target="section-table">📋 سجل الحضور</a>
+    <a href="#section-scanner" class="nav-drawer-link" data-nav-target="section-scanner">📶 شاشة القارئ</a>
+    <a href="#section-device" class="nav-drawer-link" data-nav-target="section-device">🔌 الاتصال بالجهاز</a>
+    <a href="#section-roster" class="nav-drawer-link" data-nav-target="section-roster">🧑‍🎓 إدارة الطلاب</a>
+    <a href="#section-activity" class="nav-drawer-link" data-nav-target="section-activity">🕒 آخر العمليات</a>
+    <a href="#section-analytics" class="nav-drawer-link" data-nav-target="section-analytics">📊 التحليلات والترتيب</a>
+    <a href="#section-settings" class="nav-drawer-link" data-nav-target="section-settings">⚙️ الإعدادات</a>
+    <div class="nav-drawer-sep"></div>
+    <button class="nav-drawer-action" id="navDrawerResync">🔄 إعادة مزامنة الجهاز</button>
+    <button class="nav-drawer-action" id="navDrawerLogout">🚪 تسجيل الخروج</button>
+  </nav>
+
+  <div class="periods-row" id="classesRow"></div>
 
   <div class="periods-row" id="periodsRow"></div>
 
@@ -388,12 +602,13 @@ footer strong{ color:var(--teal); font-weight:700; }
     <div class="stat present"><div><div class="n" id="statPresent">0</div><div class="l">حاضر ✅</div></div><div class="stat-icon">✅</div></div>
     <div class="stat late"><div><div class="n" id="statLate">0</div><div class="l">متأخر 🟡</div></div><div class="stat-icon">🟡</div></div>
     <div class="stat absent"><div><div class="n" id="statAbsent">0</div><div class="l">غائب ❌</div></div><div class="stat-icon">❌</div></div>
+    <div class="stat"><div><div class="n" id="statClassPct">—</div><div class="l">نسبة حضور الصف 📊</div></div><div class="stat-icon">📊</div></div>
   </div>
 
   <div class="grid">
 
     <div>
-      <div class="card">
+      <div class="card" id="section-scanner">
         <h2><span class="dot"></span> شاشة القارئ (OLED)</h2>
         <div class="record-day-banner" id="recordDayBanner"></div>
         <div class="scanner" id="scannerBox">
@@ -414,8 +629,17 @@ footer strong{ color:var(--teal); font-weight:700; }
         </div>
       </div>
 
-      <div class="card">
+      <div class="card" id="section-device">
         <h2><span class="dot"></span> الاتصال بقارئ البطاقات (ESP32)</h2>
+        <div class="device-status-row">
+          <div class="device-badge" id="deviceOnlineBadge">⚪ لا توجد بيانات بعد</div>
+          <div class="device-badge" id="deviceLastSeenBadge">آخر ظهور: —</div>
+          <div class="device-badge" id="deviceSignalBadge">
+            <div class="signal-bars" id="signalBars"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+            <span id="signalText">—</span>
+          </div>
+          <button class="resync-btn" id="resyncBtn">🔄 إعادة مزامنة الجهاز</button>
+        </div>
         <div class="sim-note" id="connStatus">🟡 انتظار أول اتصال من قارئ البطاقات عبر Firebase...</div>
       </div>
 
@@ -436,18 +660,52 @@ footer strong{ color:var(--teal); font-weight:700; }
         </div>
       </div>
 
-      <div class="card">
+      <div class="card" id="section-roster">
         <h2><span class="dot"></span> إدارة الطلاب</h2>
         <div class="roster-list" id="rosterList"></div>
+        <div class="enroll-active-banner" id="enrollActiveBanner"><div class="spinner"></div> بانتظار تمرير البطاقة على القارئ...</div>
         <form class="add-student-form" id="addStudentForm">
           <input type="text" name="name" placeholder="اسم الطالب الجديد" required>
           <input type="text" name="card" placeholder="رقم البطاقة (مثال: A1F2)" style="direction:ltr; text-transform:uppercase;">
+          <button type="button" class="enroll-toggle-btn" id="enrollToggleBtn">📶 امسح البطاقة بدل الكتابة</button>
           <button type="submit">إضافة طالب</button>
         </form>
       </div>
+
+      <div class="card" id="section-activity">
+        <h2><span class="dot"></span> آخر العمليات</h2>
+        <div class="activity-list" id="activityList"></div>
+      </div>
+
+      <div class="card" id="section-analytics">
+        <h2><span class="dot"></span> التحليلات والترتيب</h2>
+        <div class="chart-wrap" id="attendanceChart"></div>
+        <table class="ranking-table" id="rankingTable" style="margin-top:14px;">
+          <thead><tr><th>#</th><th>الطالب</th><th>حاضر</th><th>متأخر</th><th>غائب</th><th>النسبة</th></tr></thead>
+          <tbody id="rankingTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card" id="section-settings">
+        <h2><span class="dot"></span> إعدادات الجهاز والصف</h2>
+        <div class="settings-field">
+          <label>اسم الصف / الفصل</label>
+          <input type="text" id="settingsClassName" placeholder="مثال: الصف الثالث - أ">
+        </div>
+        <div class="settings-field">
+          <label>اسم المعلم</label>
+          <input type="text" id="settingsTeacherName" placeholder="مثال: أ. حاتم">
+        </div>
+        <div class="settings-field">
+          <label>معرّف القارئ (Device ID)</label>
+          <input type="text" id="settingsDeviceId" readonly>
+          <div class="readonly-note">هذا المعرّف مضبوط داخل كود القطعة نفسها (DEVICE_ID) — لعرضه هنا فقط.</div>
+        </div>
+        <button class="save-settings-btn" id="saveSettingsBtn">💾 حفظ الإعدادات</button>
+      </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="section-table">
       <div class="table-head">
         <h2 style="margin-bottom:0;"><span class="dot"></span> سجل الحضور — <span id="periodNameLabel"></span> · <span id="selectedDateLabel"></span></h2>
         <div class="report-btns">
@@ -470,6 +728,32 @@ footer strong{ color:var(--teal); font-weight:700; }
 </div><!-- /#dashboardScreen -->
 
 <div class="toast" id="toast"></div>
+
+<div class="student-profile-overlay" id="studentProfileOverlay">
+  <div class="student-profile-box">
+    <span class="sp-close" id="spCloseBtn">✕</span>
+    <h3 id="spName">—</h3>
+    <div class="sim-note" id="spCard" style="margin-top:4px;">#—</div>
+    <div class="sp-stat-row">
+      <div class="sp-stat"><div class="n" id="spPresent">0</div><div class="l">حاضر</div></div>
+      <div class="sp-stat"><div class="n" id="spLate">0</div><div class="l">متأخر</div></div>
+      <div class="sp-stat"><div class="n" id="spAbsent">0</div><div class="l">غائب</div></div>
+      <div class="sp-stat"><div class="n" id="spPct">0%</div><div class="l">نسبة الحضور</div></div>
+    </div>
+    <div class="sp-actions">
+      <button id="spMonthlyBtn">📄 تقرير شهري PDF</button>
+      <button id="spCloseBtn2">إغلاق</button>
+    </div>
+    <div class="sp-notes-section">
+      <h4>📝 ملاحظات المعلم (تظهر لولي الأمر)</h4>
+      <div class="sp-notes-list" id="spNotesList"></div>
+      <div class="sp-note-add">
+        <textarea id="spNoteInput" placeholder="اكتب ملاحظة جديدة..." rows="2"></textarea>
+        <button id="spNoteAddBtn">➕ إضافة ملاحظة</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Firebase (قاعدة بيانات سحابية مجانية — تخلي البيانات تنتقل بين أي جهاز) -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -510,6 +794,12 @@ const db = firebase.firestore();
 //        match /devices/{deviceId} {
 //          allow read, write: if request.auth != null;
 //        }
+//        match /deviceHeartbeat/{deviceId} {
+//          allow read, write: if request.auth != null; // الجهاز يكتب، المعلم يقرأ
+//        }
+//        match /deviceCommands/{deviceId} {
+//          allow read, write: if request.auth != null; // المعلم يكتب أمر المزامنة، الجهاز يقرأه ويصفّره
+//        }
 //        match /parentPortal/{card} {
 //          allow read: if request.auth != null; // يشمل الدخول المجهول لولي الأمر
 //          allow write: if request.auth != null && !request.auth.token.firebase.sign_in_provider.matches('anonymous');
@@ -519,6 +809,47 @@ const db = firebase.firestore();
 // ================================================================
 
 let loggedIn = false;
+
+// ===== الوضع الداكن/الفاتح =====
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('themeToggleBtn');
+  if(btn) btn.textContent = theme === 'light' ? '☀️' : '🌙';
+  try{ localStorage.setItem('attendanceTheme', theme); }catch(e){}
+}
+(function initTheme(){
+  let saved = 'dark';
+  try{ saved = localStorage.getItem('attendanceTheme') || 'dark'; }catch(e){}
+  applyTheme(saved);
+})();
+document.getElementById('themeToggleBtn').addEventListener('click', ()=>{
+  const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  applyTheme(current === 'light' ? 'dark' : 'light');
+});
+
+// ===== قائمة الهامبرغر (تنقّل + تنظيم اللوحة) =====
+const navDrawer = document.getElementById('navDrawer');
+const navDrawerOverlay = document.getElementById('navDrawerOverlay');
+function openNavDrawer(){ navDrawer.classList.add('show'); navDrawerOverlay.classList.add('show'); }
+function closeNavDrawer(){ navDrawer.classList.remove('show'); navDrawerOverlay.classList.remove('show'); }
+document.getElementById('hamburgerBtn').addEventListener('click', openNavDrawer);
+document.getElementById('navDrawerClose').addEventListener('click', closeNavDrawer);
+navDrawerOverlay.addEventListener('click', closeNavDrawer);
+document.querySelectorAll('.nav-drawer-link').forEach(a=> a.addEventListener('click', (e)=>{
+  e.preventDefault();
+  const target = document.getElementById(a.dataset.navTarget);
+  closeNavDrawer();
+  if(target) setTimeout(()=> target.scrollIntoView({behavior:'smooth', block:'start'}), 150);
+}));
+document.getElementById('navDrawerResync').addEventListener('click', ()=>{
+  closeNavDrawer();
+  document.getElementById('resyncBtn').click();
+});
+document.getElementById('navDrawerLogout').addEventListener('click', ()=>{
+  closeNavDrawer();
+  document.getElementById('logoutBtn').click();
+});
+document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeNavDrawer(); });
 
 
 function defaultStudents(){
@@ -542,6 +873,13 @@ let studentSeq = students.length + 1;
 let periods = [ {id:'p1', name:'الحصة الأولى', onTime:'07:00', lateTime:'07:15', recordsByDate:{}} ];
 let periodSeq = 2;
 let currentPeriodId = periods[0].id;
+let className = '';
+let teacherName = '';
+let notesByStudent = {}; // { studentId: [{id, text, date}] } — ملاحظات تظهر لولي الأمر
+
+// ===== الصفوف (كل معلم يقدر يضيف أكثر من صف، كل صف بياناته مستقلة تمامًا) =====
+let classesList = [{id:'c1', name:'الصف الأول'}];
+let activeClassId = 'c1';
 
 let editingStudentId = null;
 let editingExcuseFor = null;
@@ -550,11 +888,13 @@ let pendingDeletePeriod = null, pendingDeletePeriodTimer = null;
 let pendingDeleteStudent = null, pendingDeleteStudentTimer = null;
 
 // حفظ كل بيانات التطبيق (الطلاب + الحصص + السجلات اليومية) في Firebase — يظهر فورًا على أي جهاز ثاني
+// كل صف له مستند منفصل (class_{id}) حتى تكون بيانات كل صف مستقلة تمامًا
 async function saveAppData(){
   try{
     const serialized = {
       students, studentSeq,
       periodSeq, currentPeriodId,
+      className, teacherName, notesByStudent,
       periods: periods.map(p => ({
         id: p.id, name: p.name, onTime: p.onTime, lateTime: p.lateTime,
         recordsByDate: Object.fromEntries(Object.entries(p.recordsByDate || {}).map(([dateKey, dayRecords]) => [
@@ -563,7 +903,7 @@ async function saveAppData(){
       }))
     };
     if(!currentUser) return;
-    await db.collection('users').doc(currentUser.uid).collection('attendance').doc('main').set(serialized);
+    await db.collection('users').doc(currentUser.uid).collection('attendance').doc('class_' + activeClassId).set(serialized);
     syncParentPortal();
   }catch(e){
     console.error('Save failed', e);
@@ -571,37 +911,149 @@ async function saveAppData(){
   }
 }
 
+async function saveClassIndex(){
+  if(!currentUser) return;
+  try{
+    await db.collection('users').doc(currentUser.uid).collection('attendance').doc('classIndex').set({
+      classes: classesList, activeClassId
+    });
+  }catch(e){
+    console.error('save classIndex failed', e);
+  }
+}
+
+// يحوّل مستند صف خام من Firestore إلى المتغيرات الحية المستخدمة بالواجهة
+function applyClassDocData(d){
+  students = d.students || defaultStudents();
+  studentSeq = d.studentSeq || (students.length + 1);
+  periodSeq = d.periodSeq || 2;
+  currentPeriodId = d.currentPeriodId || (d.periods && d.periods[0] && d.periods[0].id) || 'p1';
+  className = d.className || '';
+  teacherName = d.teacherName || '';
+  notesByStudent = d.notesByStudent || {};
+  periods = (d.periods && d.periods.length) ? d.periods.map(p => {
+    let recordsByDate;
+    if(p.recordsByDate){
+      // الصيغة الجديدة: سجلات مقسّمة حسب التاريخ
+      recordsByDate = Object.fromEntries(Object.entries(p.recordsByDate).map(([dateKey, dayRecords]) => [
+        dateKey, Object.fromEntries(Object.entries(dayRecords || {}).map(([sid, r]) => [sid, {...r, time: r.time ? new Date(r.time) : null}]))
+      ]));
+    } else if(p.records){
+      // توافق مع الصيغة القديمة (بدون تواريخ): نضع كل السجلات القديمة تحت تاريخ اليوم
+      recordsByDate = { [todayKey()]: Object.fromEntries(Object.entries(p.records).map(([sid, r]) => [sid, {...r, time: new Date(r.time)}])) };
+    } else {
+      recordsByDate = {};
+    }
+    return { id: p.id, name: p.name, onTime: p.onTime, lateTime: p.lateTime, recordsByDate };
+  }) : [{id:'p1', name:'الحصة الأولى', onTime:'07:00', lateTime:'07:15', recordsByDate:{}}];
+}
+
+// يهيّئ متغيرات صف جديد فارغ تمامًا (بدون طلاب تجريبيين)
+function applyEmptyClassData(name){
+  students = [];
+  studentSeq = 1;
+  periods = [{id:'p1', name:'الحصة الأولى', onTime:'07:00', lateTime:'07:15', recordsByDate:{}}];
+  periodSeq = 2;
+  currentPeriodId = 'p1';
+  className = name || '';
+  notesByStudent = {};
+}
+
 async function loadAppData(){
   try{
     if(!currentUser) return false;
-    const snap = await db.collection('users').doc(currentUser.uid).collection('attendance').doc('main').get();
-    if(!snap.exists){ return false; }
-    const d = snap.data();
-    students = d.students || defaultStudents();
-    studentSeq = d.studentSeq || (students.length + 1);
-    periodSeq = d.periodSeq || 2;
-    currentPeriodId = d.currentPeriodId || (d.periods && d.periods[0] && d.periods[0].id) || 'p1';
-    periods = (d.periods && d.periods.length) ? d.periods.map(p => {
-      let recordsByDate;
-      if(p.recordsByDate){
-        // الصيغة الجديدة: سجلات مقسّمة حسب التاريخ
-        recordsByDate = Object.fromEntries(Object.entries(p.recordsByDate).map(([dateKey, dayRecords]) => [
-          dateKey, Object.fromEntries(Object.entries(dayRecords || {}).map(([sid, r]) => [sid, {...r, time: r.time ? new Date(r.time) : null}]))
-        ]));
-      } else if(p.records){
-        // توافق مع الصيغة القديمة (بدون تواريخ): نضع كل السجلات القديمة تحت تاريخ اليوم
-        recordsByDate = { [todayKey()]: Object.fromEntries(Object.entries(p.records).map(([sid, r]) => [sid, {...r, time: new Date(r.time)}])) };
-      } else {
-        recordsByDate = {};
+    const attendanceCol = db.collection('users').doc(currentUser.uid).collection('attendance');
+
+    // 1) نجيب فهرس الصفوف
+    const indexSnap = await attendanceCol.doc('classIndex').get();
+    if(indexSnap.exists){
+      const idx = indexSnap.data();
+      classesList = (idx.classes && idx.classes.length) ? idx.classes : [{id:'c1', name:'الصف الأول'}];
+      activeClassId = idx.activeClassId || classesList[0].id;
+    } else {
+      // ما فيه فهرس بعد — نتحقق من وجود بيانات قديمة بصيغة "صف واحد" (main) وننقلها كأول صف
+      const legacySnap = await attendanceCol.doc('main').get();
+      const legacyName = (legacySnap.exists && legacySnap.data().className) || 'الصف الأول';
+      classesList = [{id:'c1', name: legacyName}];
+      activeClassId = 'c1';
+      if(legacySnap.exists){
+        await attendanceCol.doc('class_c1').set(legacySnap.data());
       }
-      return { id: p.id, name: p.name, onTime: p.onTime, lateTime: p.lateTime, recordsByDate };
-    }) : [{id:'p1', name:'الحصة الأولى', onTime:'07:00', lateTime:'07:15', recordsByDate:{}}];
+      await saveClassIndex();
+    }
+
+    // 2) نحمّل بيانات الصف النشط فقط
+    const classSnap = await attendanceCol.doc('class_' + activeClassId).get();
+    if(!classSnap.exists){ return false; }
+    applyClassDocData(classSnap.data());
     return true;
   }catch(e){
     console.error('Load failed', e);
     showToast('⚠️ تعذّر تحميل البيانات — تحقق من الاتصال بالإنترنت');
     return false;
   }
+}
+
+// ===== التنقّل بين الصفوف وإضافة صف جديد =====
+async function switchClass(newClassId){
+  if(!newClassId || newClassId === activeClassId) return;
+  await saveAppData(); // نحفظ الصف الحالي أولًا حتى ما نفقد شي
+  activeClassId = newClassId;
+  await saveClassIndex();
+
+  const snap = await db.collection('users').doc(currentUser.uid).collection('attendance').doc('class_' + activeClassId).get();
+  if(snap.exists){
+    applyClassDocData(snap.data());
+  } else {
+    applyEmptyClassData((classesList.find(c=>c.id===activeClassId) || {}).name);
+  }
+  selectedDate = todayKey();
+  weekAnchor = startOfWeek(getNow());
+  syncSettingsInputs();
+  syncClassSettingsInputs();
+  renderAll();
+  renderClassTabs();
+  const activeName = (classesList.find(c=>c.id===activeClassId) || {}).name || '';
+  showToast('📚 تم الانتقال إلى: ' + activeName);
+}
+
+async function addNewClass(){
+  const name = prompt('اسم الصف الجديد:');
+  if(!name || !name.trim()) return;
+  await saveAppData(); // نحفظ الصف الحالي قبل إنشاء صف جديد
+
+  const newId = 'c' + Date.now();
+  classesList.push({id:newId, name:name.trim()});
+  activeClassId = newId;
+  applyEmptyClassData(name.trim());
+  selectedDate = todayKey();
+  weekAnchor = startOfWeek(getNow());
+
+  await saveClassIndex();
+  await saveAppData();
+  syncSettingsInputs();
+  syncClassSettingsInputs();
+  renderAll();
+  renderClassTabs();
+  showToast('✅ تم إنشاء الصف: ' + name.trim());
+}
+
+function renderClassTabs(){
+  const row = document.getElementById('classesRow');
+  if(!row) return;
+  row.innerHTML = '';
+  classesList.forEach(c=>{
+    const tab = document.createElement('div');
+    tab.className = 'period-tab' + (c.id === activeClassId ? ' active' : '');
+    tab.textContent = '🏫 ' + (c.name || 'بدون اسم');
+    tab.addEventListener('click', ()=> switchClass(c.id));
+    row.appendChild(tab);
+  });
+  const addBtn = document.createElement('div');
+  addBtn.className = 'period-add';
+  addBtn.textContent = '+ صف جديد';
+  addBtn.addEventListener('click', addNewClass);
+  row.appendChild(addBtn);
 }
 
 // ===== شاشة الدخول باستخدام Firebase Authentication =====
@@ -680,12 +1132,15 @@ async function enterDashboard(user){
   document.getElementById('dashboardScreen').style.display = 'block';
   document.getElementById('authForm').reset();
   syncSettingsInputs();
+  syncClassSettingsInputs();
   renderAll();
   startDeviceListener();
+  startHeartbeatListener();
 }
 
 function leaveDashboard(){
   stopDeviceListener();
+  stopHeartbeatListener();
   currentUser = null;
   loggedIn = false;
   document.getElementById('dashboardScreen').style.display = 'none';
@@ -775,9 +1230,17 @@ function renderParentScreen(data){
   const todK = todayKey();
   const content = document.getElementById('parentContent');
   const periodsData = data.periods || [];
+  const notes = (data.notes || []).slice().sort((a,b)=> b.date.localeCompare(a.date));
+
+  const notesHtml = `<div class="card parent-period-card">
+      <h2><span class="dot"></span> ملاحظات المعلم</h2>
+      ${notes.length
+        ? notes.map(n=> `<div class="sp-note-item" style="margin-bottom:8px;"><div class="sp-note-date">${n.date}</div><div>${n.text.replace(/</g,'&lt;')}</div></div>`).join('')
+        : '<div class="parent-empty" style="padding:14px 0;">لا توجد ملاحظات من المعلم حاليًا</div>'}
+    </div>`;
 
   if(!periodsData.length){
-    content.innerHTML = `<div class="parent-empty">لا توجد سجلات حضور بعد لهذا الطالب.</div>`;
+    content.innerHTML = `<div class="parent-empty">لا توجد سجلات حضور بعد لهذا الطالب.</div>` + notesHtml;
     return;
   }
 
@@ -801,7 +1264,7 @@ function renderParentScreen(data){
       <div class="parent-today-row">${todayHtml}</div>
       <div class="parent-week-grid">${weekCells}</div>
     </div>`;
-  }).join('');
+  }).join('') + notesHtml;
 }
 
 // نحدّث سجل كل طالب في مجموعة عامة (parentPortal) يقدر ولي الأمر يقرأها برقم البطاقة فقط.
@@ -824,7 +1287,8 @@ async function syncParentPortal(){
         name: s.name,
         teacherUid: currentUser.uid,
         updatedAt: new Date().toISOString(),
-        periods: periodsForStudent
+        periods: periodsForStudent,
+        notes: notesByStudent[s.id] || []
       });
     });
     await Promise.all(writes);
@@ -1106,6 +1570,22 @@ function syncSettingsInputs(){
 document.getElementById('onTimeInput').addEventListener('change', e=>{ currentPeriod().onTime = e.target.value; saveAppData(); });
 document.getElementById('lateTimeInput').addEventListener('change', e=>{ currentPeriod().lateTime = e.target.value; saveAppData(); });
 
+function syncClassSettingsInputs(){
+  document.getElementById('settingsClassName').value = className;
+  document.getElementById('settingsTeacherName').value = teacherName;
+  document.getElementById('settingsDeviceId').value = DEVICE_ID;
+}
+document.getElementById('saveSettingsBtn').addEventListener('click', ()=>{
+  className = document.getElementById('settingsClassName').value.trim();
+  teacherName = document.getElementById('settingsTeacherName').value.trim();
+  const entry = classesList.find(c=>c.id===activeClassId);
+  if(entry) entry.name = className || entry.name;
+  saveAppData();
+  saveClassIndex();
+  renderClassTabs();
+  showToast('💾 تم حفظ الإعدادات');
+});
+
 // ===== ESP32 cloud reader connection عبر Firestore =====
 const DEVICE_ID = 'hatim-reader';
 let lastSeq = -1;
@@ -1171,18 +1651,120 @@ function stopDeviceListener(){
   lastSeq = -1;
 }
 
+// ===== نبض الجهاز (Heartbeat): حالة الاتصال، آخر ظهور، قوة الإشارة =====
+let deviceHeartbeatUnsub = null;
+let lastHeartbeatReceivedAt = 0;
+let lastRssi = null;
+
+function deviceHeartbeatRef(){ return db.collection('deviceHeartbeat').doc(DEVICE_ID); }
+function deviceCommandsRef(){ return db.collection('deviceCommands').doc(DEVICE_ID); }
+
+function startHeartbeatListener(){
+  if(deviceHeartbeatUnsub) deviceHeartbeatUnsub();
+  lastHeartbeatReceivedAt = 0;
+  lastRssi = null;
+  deviceHeartbeatUnsub = deviceHeartbeatRef().onSnapshot(snap=>{
+    if(!snap.exists) return;
+    lastHeartbeatReceivedAt = Date.now();
+    const data = snap.data() || {};
+    const rssiNum = Number(data.rssi);
+    lastRssi = Number.isFinite(rssiNum) ? rssiNum : null;
+    renderDeviceStatus();
+  });
+}
+function stopHeartbeatListener(){
+  if(deviceHeartbeatUnsub){ deviceHeartbeatUnsub(); deviceHeartbeatUnsub = null; }
+}
+
+function renderDeviceStatus(){
+  const onlineBadge = document.getElementById('deviceOnlineBadge');
+  const lastSeenBadge = document.getElementById('deviceLastSeenBadge');
+  const signalText = document.getElementById('signalText');
+  const bars = document.querySelectorAll('#signalBars .bar');
+  if(!onlineBadge) return;
+
+  if(!lastHeartbeatReceivedAt){
+    onlineBadge.className = 'device-badge';
+    onlineBadge.textContent = '⚪ لا توجد بيانات بعد — لن يظهر إلا بعد تحديث كود القطعة';
+    lastSeenBadge.textContent = 'آخر ظهور: —';
+    signalText.textContent = '—';
+    bars.forEach(b=>b.classList.remove('on'));
+    return;
+  }
+
+  const elapsedMs = Date.now() - lastHeartbeatReceivedAt;
+  const online = elapsedMs < 20000; // نعتبره غير متصل لو ما وصل نبض جديد خلال 20 ثانية
+  onlineBadge.className = 'device-badge ' + (online ? 'online' : 'offline');
+  onlineBadge.textContent = online ? '🟢 متصل' : '🔴 غير متصل';
+
+  const elapsedSec = Math.floor(elapsedMs/1000);
+  let lastSeenText;
+  if(elapsedSec < 60) lastSeenText = `آخر ظهور: قبل ${elapsedSec} ث`;
+  else if(elapsedSec < 3600) lastSeenText = `آخر ظهور: قبل ${Math.floor(elapsedSec/60)} د`;
+  else lastSeenText = `آخر ظهور: قبل ${Math.floor(elapsedSec/3600)} س`;
+  lastSeenBadge.textContent = lastSeenText;
+
+  if(lastRssi === null){
+    signalText.textContent = '—';
+    bars.forEach(b=>b.classList.remove('on'));
+  } else {
+    let level, label;
+    if(lastRssi > -60){ level=4; label='ممتاز'; }
+    else if(lastRssi > -70){ level=3; label='جيد'; }
+    else if(lastRssi > -80){ level=2; label='متوسط'; }
+    else { level=1; label='ضعيف'; }
+    bars.forEach((b,i)=> b.classList.toggle('on', i < level));
+    signalText.textContent = `${label} (${lastRssi} dBm)`;
+  }
+}
+setInterval(renderDeviceStatus, 3000);
+
+document.getElementById('resyncBtn').addEventListener('click', async ()=>{
+  try{
+    await deviceCommandsRef().set({resyncRequested:true}, {merge:true});
+    showToast('🔄 تم إرسال أمر إعادة المزامنة — سيُنفَّذ خلال ثوانٍ عند أول استطلاع من الجهاز');
+  }catch(e){
+    console.error(e);
+    showToast('⚠️ تعذّر إرسال أمر إعادة المزامنة');
+  }
+});
+
+let awaitingCardForNewStudent = false;
+
 function onCardScanned(uidRaw){
   const uid = uidRaw.trim().toUpperCase();
   const s = students.find(x => x.card.toUpperCase() === uid);
   if(s){
+    if(awaitingCardForNewStudent){
+      awaitingCardForNewStudent = false;
+      document.getElementById('enrollActiveBanner').classList.remove('show');
+      showToast(`⚠️ هذه البطاقة مسجّلة مسبقًا للطالب ${s.name}`);
+      sendDeviceResult('error');
+      return;
+    }
     handleScan(s.id, true);
   } else {
-    showToast('⚠️ بطاقة غير مسجّلة رقمها: ' + uid + ' — أضفها بالأسفل');
     const cardInput = document.querySelector('#addStudentForm [name="card"]');
-    if(cardInput) cardInput.value = uid;
+    if(awaitingCardForNewStudent){
+      awaitingCardForNewStudent = false;
+      document.getElementById('enrollActiveBanner').classList.remove('show');
+      if(cardInput) cardInput.value = uid;
+      const nameInput = document.querySelector('#addStudentForm [name="name"]');
+      if(nameInput) nameInput.focus();
+      showToast('✅ تم التقاط رقم البطاقة: ' + uid + ' — أدخل اسم الطالب واضغط إضافة');
+    } else {
+      showToast('⚠️ بطاقة غير مسجّلة رقمها: ' + uid + ' — أضفها بالأسفل');
+      if(cardInput) cardInput.value = uid;
+    }
     sendDeviceResult('error');
   }
 }
+
+document.getElementById('enrollToggleBtn').addEventListener('click', ()=>{
+  awaitingCardForNewStudent = true;
+  document.getElementById('enrollActiveBanner').classList.add('show');
+  showToast('📶 مرّر بطاقة الطالب الجديد على القارئ الآن...');
+});
 
 // ===== Roster management (no native confirm — double click to confirm) =====
 function renderRoster(){
@@ -1201,12 +1783,14 @@ function renderRoster(){
       row.innerHTML = `
         <div class="avatar">${s.name.charAt(0)}</div>
         <div class="rname">${s.name} <span class="rcard">#${s.card}</span></div>
+        <button class="icon-btn" data-profile="${s.id}" title="الملف والملاحظات">📝</button>
         <button class="icon-btn" data-edit="${s.id}" title="تعديل الاسم">✏️</button>
         <button class="icon-btn danger${armed?' armed':''}" data-remove="${s.id}" title="حذف الطالب">${armed ? 'تأكيد الحذف' : '🗑️'}</button>`;
     }
     list.appendChild(row);
   });
 
+  list.querySelectorAll('[data-profile]').forEach(b=> b.addEventListener('click', ()=> openStudentProfile(b.dataset.profile)));
   list.querySelectorAll('[data-edit]').forEach(b=> b.addEventListener('click', ()=>{ editingStudentId = b.dataset.edit; renderRoster(); }));
   list.querySelectorAll('[data-save]').forEach(b=> b.addEventListener('click', ()=>{
     const input = list.querySelector('[data-rename="'+b.dataset.save+'"]');
@@ -1272,23 +1856,11 @@ function renderTable(){
     if(!rec){
       badge = `<span class="badge absent">❌ غائب</span>`;
       timeTxt = '—';
-      if(editingExcuseFor === s.id){
-        excuseHtml = `<div class="excuse-edit">
-            <input type="text" placeholder="سبب الغياب..." data-excuse-input="${s.id}">
-            <button data-excuse-save="${s.id}">حفظ</button></div>`;
-      } else {
-        excuseHtml = `<button class="excuse-btn excused-btn" data-excuse-open="${s.id}">📄 غياب بعذر</button>`;
-      }
+      excuseHtml = `<button class="excuse-btn excused-btn" data-mark-excused="${s.id}">📄 غياب بعذر</button>`;
     } else if(rec.status === 'excused'){
       badge = `<span class="badge excused">📄 غائب بعذر</span>`;
       timeTxt = '—';
-      if(editingExcuseFor === s.id){
-        excuseHtml = `<div class="excuse-edit">
-            <input type="text" placeholder="سبب الغياب..." value="${rec.excuse ? rec.excuse.replace(/"/g,'&quot;') : ''}" data-excuse-input="${s.id}">
-            <button data-excuse-save="${s.id}">حفظ</button></div>`;
-      } else {
-        excuseHtml = `<span class="excuse-text">📝 ${rec.excuse || 'بدون سبب مذكور'}</span> <span class="excuse-clear" data-excuse-clear="${s.id}">✕</span>`;
-      }
+      excuseHtml = `<button class="excuse-btn" data-unmark-excused="${s.id}">✕ إلغاء العذر</button>`;
     } else if(rec.status === 'present'){
       badge = `<span class="badge present">✅ حاضر</span>`;
       timeTxt = fmtTime(rec.time);
@@ -1320,31 +1892,36 @@ function renderTable(){
     const inp = tableBody.querySelector('[data-excuse-input]');
     if(inp) inp.focus();
   }));
+  tableBody.querySelectorAll('[data-mark-excused]').forEach(b=> b.addEventListener('click', ()=>{
+    const id = b.dataset.markExcused;
+    const dayRecords = getDayRecords(currentPeriod(), selectedDate, true);
+    dayRecords[id] = {status:'excused', time:null, excuse:null};
+    renderTable();
+    saveAppData();
+    showToast('📄 تم تسجيل الطالب غائبًا بعذر');
+  }));
+  tableBody.querySelectorAll('[data-unmark-excused]').forEach(b=> b.addEventListener('click', ()=>{
+    const id = b.dataset.unmarkExcused;
+    const dayRecords = getDayRecords(currentPeriod(), selectedDate, true);
+    delete dayRecords[id];
+    renderTable();
+    saveAppData();
+  }));
   tableBody.querySelectorAll('[data-excuse-save]').forEach(b=> b.addEventListener('click', ()=>{
     const id = b.dataset.excuseSave;
     const input = tableBody.querySelector('[data-excuse-input="'+id+'"]');
     const val = input.value.trim();
     const dayRecords = getDayRecords(currentPeriod(), selectedDate, true);
-    if(dayRecords[id]){
-      dayRecords[id].excuse = val;
-    } else {
-      // الطالب أصلاً ما مرّر بطاقته اليوم — نسجّله يدويًا كـ"غائب بعذر"
-      dayRecords[id] = {status:'excused', time:null, excuse: val};
-    }
+    if(dayRecords[id]) dayRecords[id].excuse = val;
     editingExcuseFor = null;
     renderTable();
     saveAppData();
-    showToast('تم حفظ العذر');
+    showToast('تم حفظ عذر التأخير');
   }));
   tableBody.querySelectorAll('[data-excuse-clear]').forEach(b=> b.addEventListener('click', ()=>{
     const id = b.dataset.excuseClear;
     const dayRecords = getDayRecords(currentPeriod(), selectedDate, true);
-    const rec2 = dayRecords[id];
-    if(rec2 && rec2.status === 'excused' && !rec2.time){
-      delete dayRecords[id]; // ما فيه تسجيل فعلي أصلاً، رجّعه غائب عادي بدون عذر
-    } else if(rec2){
-      rec2.excuse = null;
-    }
+    if(dayRecords[id]) dayRecords[id].excuse = null;
     renderTable();
     saveAppData();
   }));
@@ -1363,7 +1940,278 @@ function updateStats(){
   document.getElementById('statPresent').textContent = present;
   document.getElementById('statLate').textContent = late;
   document.getElementById('statAbsent').textContent = students.length - present - late;
+
+  const classStats = computeClassStats(currentPeriod());
+  document.getElementById('statClassPct').textContent = classStats.pct === null ? '—' : classStats.pct + '%';
+
+  renderActivityLog();
+  renderRankingTable();
+  renderAttendanceChart();
 }
+
+// نسبة حضور الصف كاملًا (متوسط مرجّح عبر كل الأيام المسجَّلة لكل الطلاب، للحصة الحالية)
+function computeClassStats(period){
+  period = period || currentPeriod();
+  let totalPresent=0, totalLate=0, totalAbsent=0;
+  students.forEach(s=>{
+    const st = computeStudentStats(s.id, period);
+    totalPresent += st.present; totalLate += st.late; totalAbsent += st.absent;
+  });
+  const counted = totalPresent + totalLate + totalAbsent;
+  const pct = counted > 0 ? Math.round(((totalPresent + totalLate) / counted) * 100) : null;
+  return {pct, totalPresent, totalLate, totalAbsent};
+}
+
+// ===== إحصائيات الطالب (للبحث/الترتيب/التقرير الشهري/بطاقة الطالب) =====
+// نسبة الحضور = (حاضر + متأخر) ÷ (أيام فعلية للحصة فيها أي تسجيل) — الغياب بعذر لا يُحتسب ضد الطالب ولا له
+function computeStudentStats(studentId, period){
+  period = period || currentPeriod();
+  let present=0, late=0, absent=0, excused=0;
+  Object.values(period.recordsByDate || {}).forEach(dayRecords=>{
+    if(!dayRecords || Object.keys(dayRecords).length === 0) return; // يوم ما فيه أي تسجيل = عطلة غالبًا، تجاهله
+    const rec = dayRecords[studentId];
+    if(!rec){ absent++; return; }
+    if(rec.status === 'present') present++;
+    else if(rec.status === 'late') late++;
+    else if(rec.status === 'excused') excused++;
+    else absent++;
+  });
+  const countedDays = present + late + absent;
+  const pct = countedDays > 0 ? Math.round(((present + late) / countedDays) * 100) : null;
+  return {present, late, absent, excused, pct};
+}
+
+// ===== آخر العمليات (سجل مباشر لليوم المعروض عبر كل الحصص) =====
+function renderActivityLog(){
+  const list = document.getElementById('activityList');
+  if(!list) return;
+  let entries = [];
+  periods.forEach(p=>{
+    const dayRecords = getDayRecords(p, selectedDate, false);
+    Object.entries(dayRecords).forEach(([sid, rec])=>{
+      const s = students.find(x=>x.id===sid);
+      if(!s) return;
+      entries.push({name:s.name, card:s.card, time:rec.time, status:rec.status, periodName:p.name});
+    });
+  });
+  entries.sort((a,b)=>{
+    if(!a.time && !b.time) return 0;
+    if(!a.time) return 1;
+    if(!b.time) return -1;
+    return b.time - a.time;
+  });
+  entries = entries.slice(0, 20);
+  if(!entries.length){
+    list.innerHTML = '<div class="activity-empty">لا توجد عمليات مسجّلة لهذا اليوم بعد</div>';
+    return;
+  }
+  list.innerHTML = entries.map(e=> `
+    <div class="activity-item">
+      <span class="ai-icon">${statusIcon(e.status)}</span>
+      <span class="ai-name">${e.name}</span>
+      <span class="ai-meta">#${e.card} · ${e.time ? fmtTime(e.time) : '—'} · ${e.periodName}</span>
+    </div>`).join('');
+}
+
+// ===== ترتيب الطلاب حسب الالتزام (معلوماتي — للحصة الحالية) =====
+function renderRankingTable(){
+  const tbody = document.getElementById('rankingTableBody');
+  if(!tbody) return;
+  const period = currentPeriod();
+  const rows = students.map(s=> ({s, stats: computeStudentStats(s.id, period)}));
+  rows.sort((a,b)=>{
+    const pa = a.stats.pct === null ? -1 : a.stats.pct;
+    const pb = b.stats.pct === null ? -1 : b.stats.pct;
+    return pb - pa;
+  });
+  tbody.innerHTML = rows.map((r,i)=>{
+    const pctText = r.stats.pct === null ? '—' : r.stats.pct + '%';
+    const barWidth = r.stats.pct === null ? 0 : r.stats.pct;
+    return `<tr data-open-profile="${r.s.id}">
+      <td class="ranking-rank">${i+1}</td>
+      <td>${r.s.name}</td>
+      <td>${r.stats.present}</td>
+      <td>${r.stats.late}</td>
+      <td>${r.stats.absent}</td>
+      <td><div style="display:flex; align-items:center; gap:8px;"><div class="ranking-bar-wrap"><div class="ranking-bar" style="width:${barWidth}%;"></div></div><span class="ranking-pct">${pctText}</span></div></td>
+    </tr>`;
+  }).join('');
+  tbody.querySelectorAll('[data-open-profile]').forEach(tr=>{
+    tr.style.cursor = 'pointer';
+    tr.addEventListener('click', ()=> openStudentProfile(tr.dataset.openProfile));
+  });
+}
+
+// ===== رسم بياني بسيط لنسبة الحضور آخر 14 يوم (للحصة الحالية) =====
+function renderAttendanceChart(){
+  const container = document.getElementById('attendanceChart');
+  if(!container) return;
+  const period = currentPeriod();
+  const days = [];
+  for(let i=13;i>=0;i--){
+    const d = new Date(getNow()); d.setDate(d.getDate()-i);
+    days.push(d);
+  }
+  const barWidth = 16, gap = 10;
+  const width = days.length * (barWidth + gap) + gap;
+  const height = 116;
+  let bars = '';
+  days.forEach((d,i)=>{
+    const key = ymd(d);
+    const dayRecords = getDayRecords(period, key, false);
+    const hasData = Object.keys(dayRecords).length > 0;
+    let attended = 0;
+    students.forEach(s=>{
+      const rec = dayRecords[s.id];
+      if(rec && (rec.status==='present' || rec.status==='late')) attended++;
+    });
+    const pct = students.length > 0 ? (attended / students.length) : 0;
+    const barH = hasData ? Math.max(2, pct*80) : 2;
+    const x = gap + i*(barWidth+gap);
+    const y = 90 - barH;
+    bars += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barH}" rx="3" style="fill:var(--teal); opacity:${hasData ? 1 : 0.2};"><title>${key}: ${hasData ? Math.round(pct*100)+'%' : 'لا بيانات'}</title></rect>`;
+    bars += `<text x="${x+barWidth/2}" y="106" text-anchor="middle" class="chart-bar-label">${d.getDate()}/${d.getMonth()+1}</text>`;
+  });
+  container.innerHTML = `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">${bars}<line x1="0" y1="90" x2="${width}" y2="90" style="stroke:var(--line); stroke-width:1;"/></svg>`;
+}
+
+// ===== بطاقة ملف الطالب (من البحث أو الترتيب) =====
+let currentProfileStudentId = null;
+function openStudentProfile(studentId){
+  const s = students.find(x=>x.id===studentId);
+  if(!s) return;
+  currentProfileStudentId = studentId;
+  const stats = computeStudentStats(studentId, currentPeriod());
+  document.getElementById('spName').textContent = s.name;
+  document.getElementById('spCard').textContent = '#' + s.card + ' · ' + currentPeriod().name;
+  document.getElementById('spPresent').textContent = stats.present;
+  document.getElementById('spLate').textContent = stats.late;
+  document.getElementById('spAbsent').textContent = stats.absent;
+  document.getElementById('spPct').textContent = stats.pct === null ? '—' : stats.pct + '%';
+  document.getElementById('spNoteInput').value = '';
+  renderStudentNotes(studentId);
+  document.getElementById('studentProfileOverlay').classList.add('show');
+}
+
+// ===== ملاحظات الطالب (متعددة، تظهر لولي الأمر) =====
+function renderStudentNotes(studentId){
+  const list = document.getElementById('spNotesList');
+  const notes = (notesByStudent[studentId] || []).slice().sort((a,b)=> b.date.localeCompare(a.date));
+  if(!notes.length){
+    list.innerHTML = '<div class="sp-notes-empty">لا توجد ملاحظات بعد</div>';
+    return;
+  }
+  list.innerHTML = notes.map(n=> `
+    <div class="sp-note-item">
+      <span class="sp-note-del" data-del-note="${n.id}">✕</span>
+      <div class="sp-note-date">${n.date}</div>
+      <div>${n.text.replace(/</g,'&lt;')}</div>
+    </div>`).join('');
+  list.querySelectorAll('[data-del-note]').forEach(el=> el.addEventListener('click', ()=>{
+    notesByStudent[studentId] = (notesByStudent[studentId] || []).filter(n=> n.id !== el.dataset.delNote);
+    renderStudentNotes(studentId);
+    saveAppData();
+  }));
+}
+document.getElementById('spNoteAddBtn').addEventListener('click', ()=>{
+  if(!currentProfileStudentId) return;
+  const input = document.getElementById('spNoteInput');
+  const text = input.value.trim();
+  if(!text) return;
+  if(!notesByStudent[currentProfileStudentId]) notesByStudent[currentProfileStudentId] = [];
+  notesByStudent[currentProfileStudentId].push({
+    id: 'n' + Date.now() + Math.floor(Math.random()*1000),
+    text,
+    date: ymd(getNow()) + ' ' + fmtTime(getNow())
+  });
+  input.value = '';
+  renderStudentNotes(currentProfileStudentId);
+  saveAppData();
+  showToast('📝 تم حفظ الملاحظة');
+});
+
+function closeStudentProfile(){
+  document.getElementById('studentProfileOverlay').classList.remove('show');
+  currentProfileStudentId = null;
+}
+document.getElementById('spCloseBtn').addEventListener('click', closeStudentProfile);
+document.getElementById('spCloseBtn2').addEventListener('click', closeStudentProfile);
+document.getElementById('studentProfileOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'studentProfileOverlay') closeStudentProfile();
+});
+document.getElementById('spMonthlyBtn').addEventListener('click', ()=>{
+  if(currentProfileStudentId) exportMonthlyReport(currentProfileStudentId);
+});
+
+// ===== تقرير شهري لكل طالب (PDF عبر نافذة الطباعة) =====
+function exportMonthlyReport(studentId){
+  const s = students.find(x=>x.id===studentId);
+  if(!s) return;
+  const period = currentPeriod();
+  const now = getNow();
+  const year = now.getFullYear(), month = now.getMonth();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  let present=0, late=0, absent=0, excused=0;
+  let rows = '';
+  for(let day=1; day<=daysInMonth; day++){
+    const d = new Date(year, month, day);
+    const key = ymd(d);
+    const dayRecords = getDayRecords(period, key, false);
+    if(Object.keys(dayRecords).length === 0) continue; // يوم بدون أي تسجيل لأي طالب = عطلة على الأغلب
+    const rec = dayRecords[studentId];
+    let status, time = '—', excuse = '—';
+    if(!rec){ status = 'absent'; absent++; }
+    else{
+      status = rec.status;
+      if(status === 'present') present++;
+      else if(status === 'late') late++;
+      else if(status === 'excused') excused++;
+      else absent++;
+      time = rec.time ? fmtTime(rec.time) : '—';
+      excuse = rec.excuse || '—';
+    }
+    rows += `<tr><td>${key}</td><td>${statusLabel(status)}</td><td>${time}</td><td>${excuse}</td></tr>`;
+  }
+  const countedDays = present + late + absent;
+  const pct = countedDays > 0 ? Math.round(((present + late) / countedDays) * 100) : 0;
+  const monthLabel = `${year}-${String(month+1).padStart(2,'0')}`;
+  const body = `<h1>تقرير شهري — ${s.name}</h1>
+    <div class="sub">${period.name} · الشهر: ${monthLabel} · نسبة الحضور: ${pct}% (حاضر ${present} · متأخر ${late} · غائب ${absent} · بعذر ${excused})</div>
+    <table><thead><tr><th>التاريخ</th><th>الحالة</th><th>الوقت</th><th>ملاحظات</th></tr></thead>
+    <tbody>${rows || '<tr><td colspan="4">لا توجد بيانات لهذا الشهر</td></tr>'}</tbody></table>`;
+  openPrintWindow('تقرير شهري — ' + s.name, body);
+}
+
+// ===== بحث سريع بالاسم أو رقم البطاقة =====
+document.getElementById('globalSearchInput').addEventListener('input', (e)=>{
+  const q = e.target.value.trim().toLowerCase();
+  const resultsBox = document.getElementById('globalSearchResults');
+  if(!q){ resultsBox.classList.remove('show'); resultsBox.innerHTML=''; return; }
+  const matches = students.filter(s=> s.name.toLowerCase().includes(q) || s.card.toLowerCase().includes(q));
+  if(!matches.length){
+    resultsBox.innerHTML = '<div class="search-empty">لا يوجد طالب مطابق</div>';
+  } else {
+    resultsBox.innerHTML = matches.slice(0,8).map(s=>{
+      const stats = computeStudentStats(s.id, currentPeriod());
+      const pctText = stats.pct === null ? '—' : stats.pct + '%';
+      return `<div class="search-result-item" data-open-profile="${s.id}">
+        <div><div class="sr-name">${s.name}</div><div class="sr-meta">#${s.card}</div></div>
+        <div class="sr-pct">${pctText}</div>
+      </div>`;
+    }).join('');
+  }
+  resultsBox.classList.add('show');
+  resultsBox.querySelectorAll('[data-open-profile]').forEach(el=> el.addEventListener('click', ()=>{
+    openStudentProfile(el.dataset.openProfile);
+    resultsBox.classList.remove('show');
+    document.getElementById('globalSearchInput').value = '';
+  }));
+});
+document.addEventListener('click', (e)=>{
+  const wrap = document.getElementById('globalSearchWrap');
+  const resultsBox = document.getElementById('globalSearchResults');
+  if(wrap && resultsBox && !wrap.contains(e.target)){ resultsBox.classList.remove('show'); }
+});
 
 // ===== Scan handling =====
 // fromDevice = true لو الاستدعاء جاء من تمرير بطاقة فعلي على الجهاز (نرسل له نتيجة نضيء لمبته المناسبة)
@@ -1547,6 +2395,7 @@ function tickClock(){
 setInterval(tickClock, 1000);
 
 function renderAll(){
+  renderClassTabs();
   renderPeriodTabs();
   renderDayTabs();
   renderRoster();
