@@ -242,6 +242,24 @@ footer strong{ color:var(--teal); font-weight:700; }
 }
 .day-today-btn:hover{ border-color:var(--teal); color:var(--teal); }
 
+/* ===== Calendar date picker ===== */
+.calendar-picker-wrap{
+  position:relative; width:38px; height:38px; flex-shrink:0;
+}
+.calendar-picker-btn{
+  width:38px; height:38px; border-radius:12px; background:var(--panel);
+  border:1px solid var(--line); color:var(--text-dim); cursor:pointer;
+  display:flex; align-items:center; justify-content:center; font-size:17px;
+  transition:all .15s ease;
+}
+.calendar-picker-wrap:hover .calendar-picker-btn{
+  border-color:var(--teal); color:var(--teal);
+}
+.calendar-picker-input{
+  position:absolute; inset:0; width:100%; height:100%; opacity:0;
+  cursor:pointer; z-index:2;
+}
+
 /* ===== Report / export buttons ===== */
 .report-btns{ display:flex; gap:8px; flex-wrap:wrap; }
 .report-btn{
@@ -874,7 +892,7 @@ let students = defaultStudents();
 let studentSeq = students.length + 1;
 
 // ===== Periods =====
-let periods = [ {id:'p1', name:'الحصة الأولى', onTime:'07:00', lateTime:'07:15', recordsByDate:{}} ];
+let periods = [ {id:'p1', name:'الحصة الأولى', onTime:'07:00', lateTime:'07:15', weekdays:[new Date().getDay()], recordsByDate:{}} ];
 let periodSeq = 2;
 let currentPeriodId = periods[0].id;
 let className = '';
@@ -901,6 +919,7 @@ async function saveAppData(){
       className, teacherName, notesByStudent,
       periods: periods.map(p => ({
         id: p.id, name: p.name, onTime: p.onTime, lateTime: p.lateTime,
+        weekdays: Array.isArray(p.weekdays) ? p.weekdays : [],
         recordsByDate: Object.fromEntries(Object.entries(p.recordsByDate || {}).map(([dateKey, dayRecords]) => [
           dateKey, Object.fromEntries(Object.entries(dayRecords).map(([sid, r]) => [sid, {...r, time: r.time ? r.time.toISOString() : null}]))
         ]))
@@ -948,15 +967,27 @@ function applyClassDocData(d){
     } else {
       recordsByDate = {};
     }
-    return { id: p.id, name: p.name, onTime: p.onTime, lateTime: p.lateTime, recordsByDate };
-  }) : [{id:'p1', name:'الحصة الأولى', onTime:'07:00', lateTime:'07:15', recordsByDate:{}}];
+    let weekdays;
+    if(Array.isArray(p.weekdays) && p.weekdays.length){
+      weekdays = [...new Set(p.weekdays.map(Number).filter(n => Number.isInteger(n) && n >= 0 && n <= 6))];
+    } else if(Number.isInteger(Number(p.weekday)) && Number(p.weekday) >= 0 && Number(p.weekday) <= 6){
+      weekdays = [Number(p.weekday)];
+    } else {
+      // ترحيل تلقائي للبيانات القديمة: الحصة تظهر فقط في الأيام التي سبق أن استُخدمت فيها.
+      weekdays = [...new Set(Object.keys(recordsByDate).map(weekdayFromDateKey).filter(n => n >= 0))];
+      if(!weekdays.length) weekdays = [new Date().getDay()];
+    }
+    return { id: p.id, name: p.name, onTime: p.onTime, lateTime: p.lateTime, weekdays, recordsByDate };
+  }) : [{id:'p1', name:'الحصة الأولى', onTime:'07:00', lateTime:'07:15', weekdays:[new Date().getDay()], recordsByDate:{}}];
+
+  // لو الحصة المحفوظة سابقًا لا تخص يوم العرض الحالي، currentPeriod() سيختار حصة اليوم تلقائيًا.
 }
 
 // يهيّئ متغيرات صف جديد فارغ تمامًا (بدون طلاب تجريبيين)
 function applyEmptyClassData(name){
   students = [];
   studentSeq = 1;
-  periods = [{id:'p1', name:'الحصة الأولى', onTime:'07:00', lateTime:'07:15', recordsByDate:{}}];
+  periods = [{id:'p1', name:'الحصة الأولى', onTime:'07:00', lateTime:'07:15', weekdays:[new Date().getDay()], recordsByDate:{}}];
   periodSeq = 2;
   currentPeriodId = 'p1';
   className = name || '';
@@ -1301,7 +1332,20 @@ async function syncParentPortal(){
   }
 }
 
-function currentPeriod(){ return periods.find(p => p.id === currentPeriodId); }
+function currentPeriod(){
+  let dayPeriods = periodsForDate(selectedDate);
+  let p = dayPeriods.find(x => x.id === currentPeriodId);
+  if(!p){
+    if(!dayPeriods.length){
+      p = ensurePeriodForDate(selectedDate);
+      dayPeriods = [p];
+    } else {
+      p = dayPeriods[0];
+      currentPeriodId = p.id;
+    }
+  }
+  return p;
+}
 
 let simOffsetMs = 0;
 function getNow(){ return new Date(Date.now() + simOffsetMs); }
@@ -1332,6 +1376,40 @@ function weekDates(weekStart){
   });
 }
 function fmtShortDate(d){ return `${d.getDate()}/${d.getMonth()+1}`; }
+
+function dateFromKey(dateKey){
+  const [y,m,d] = String(dateKey).split('-').map(Number);
+  return new Date(y, (m || 1)-1, d || 1);
+}
+function weekdayFromDateKey(dateKey){
+  const d = dateFromKey(dateKey);
+  return Number.isNaN(d.getTime()) ? -1 : d.getDay();
+}
+function periodsForDate(dateKey){
+  const dow = weekdayFromDateKey(dateKey);
+  return periods.filter(p => {
+    const days = Array.isArray(p.weekdays) ? p.weekdays.map(Number) : [];
+    return days.includes(dow);
+  });
+}
+function ensurePeriodForDate(dateKey){
+  const existing = periodsForDate(dateKey);
+  if(existing.length){
+    if(!existing.some(p => p.id === currentPeriodId)) currentPeriodId = existing[0].id;
+    return existing.find(p => p.id === currentPeriodId) || existing[0];
+  }
+  const p = {
+    id:'p'+periodSeq++,
+    name:'الحصة الأولى',
+    onTime:'07:00',
+    lateTime:'07:15',
+    weekdays:[weekdayFromDateKey(dateKey)],
+    recordsByDate:{}
+  };
+  periods.push(p);
+  currentPeriodId = p.id;
+  return p;
+}
 
 let selectedDate = todayKey();
 let weekAnchor = startOfWeek(getNow());
@@ -1396,12 +1474,16 @@ function renderPeriodTabs(){
   const row = document.getElementById('periodsRow');
   row.innerHTML = '';
 
-  periods.forEach(p=>{
+  // لا نعرض إلا حصص يوم الأسبوع المحدد.
+  const activePeriod = currentPeriod();
+  const dayPeriods = periodsForDate(selectedDate);
+
+  dayPeriods.forEach(p=>{
     const tab = document.createElement('div');
     tab.className = 'period-tab' + (p.id === currentPeriodId ? ' active' : '');
     const delArmed = pendingDeletePeriod === p.id;
     tab.innerHTML = `<span data-select="${p.id}">${p.name}</span>` +
-      (periods.length > 1 ? `<span class="period-del${delArmed ? ' armed' : ''}" data-del="${p.id}">${delArmed ? 'تأكيد؟' : '✕'}</span>` : '');
+      (dayPeriods.length > 1 ? `<span class="period-del${delArmed ? ' armed' : ''}" data-del="${p.id}">${delArmed ? 'تأكيد؟' : '✕'}</span>` : '');
     row.appendChild(tab);
   });
 
@@ -1445,14 +1527,16 @@ function renderPeriodTabs(){
     const addBtn = document.createElement('div');
     addBtn.className = 'period-add';
     addBtn.textContent = '+';
-    addBtn.title = 'إضافة حصة جديدة';
+    addBtn.title = 'إضافة حصة لهذا اليوم فقط';
     addBtn.addEventListener('click', ()=>{ addingPeriod = true; renderPeriodTabs(); });
     row.appendChild(addBtn);
   }
 
-  document.getElementById('periodNameLabel').textContent = currentPeriod().name;
+  document.getElementById('periodNameLabel').textContent = activePeriod.name;
   const dateLabelEl = document.getElementById('selectedDateLabel');
   if(dateLabelEl) dateLabelEl.textContent = selectedDate;
+
+  syncSettingsInputs();
 }
 
 // ===== أيام الأسبوع (تنقّل بين الأيام + عرض السجل المحفوظ لكل يوم) =====
@@ -1481,10 +1565,11 @@ function renderDayTabs(){
     tab.innerHTML = `<span class="dname">${ARABIC_DAY_SHORT[d.getDay()]}</span><span class="dnum">${fmtShortDate(d)}</span>`;
     tab.addEventListener('click', ()=>{
       selectedDate = key;
+      currentPeriodId = null;
       renderDayTabs();
+      renderPeriodTabs();
       renderTable();
       updateStats();
-      renderPeriodTabs();
       updateRecordDayBanner();
     });
     row.appendChild(tab);
@@ -1506,13 +1591,34 @@ function renderDayTabs(){
   todayBtn.addEventListener('click', ()=>{
     weekAnchor = startOfWeek(getNow());
     selectedDate = todayKey();
+    currentPeriodId = null;
     renderDayTabs();
+    renderPeriodTabs();
     renderTable();
     updateStats();
-    renderPeriodTabs();
     updateRecordDayBanner();
   });
   row.appendChild(todayBtn);
+
+  // أيقونة تقويم: تتيح اختيار يوم/شهر/سنة مباشرة.
+  const pickerWrap = document.createElement('div');
+  pickerWrap.className = 'calendar-picker-wrap';
+  pickerWrap.title = 'اختيار تاريخ';
+  pickerWrap.innerHTML = `<button type="button" class="calendar-picker-btn" aria-label="اختيار تاريخ">📅</button>
+    <input type="date" class="calendar-picker-input" value="${selectedDate}" aria-label="اختيار يوم وشهر وسنة">`;
+  const picker = pickerWrap.querySelector('input');
+  picker.addEventListener('change', ()=>{
+    if(!picker.value) return;
+    selectedDate = picker.value;
+    currentPeriodId = null;
+    weekAnchor = startOfWeek(dateFromKey(selectedDate));
+    renderDayTabs();
+    renderPeriodTabs();
+    renderTable();
+    updateStats();
+    updateRecordDayBanner();
+  });
+  row.appendChild(pickerWrap);
 
   updateRecordDayBanner();
 }
@@ -1531,10 +1637,11 @@ function updateRecordDayBanner(){
     document.getElementById('backToTodayBtn').addEventListener('click', ()=>{
       weekAnchor = startOfWeek(getNow());
       selectedDate = todayKey();
+      currentPeriodId = null;
       renderDayTabs();
+      renderPeriodTabs();
       renderTable();
       updateStats();
-      renderPeriodTabs();
     });
   }
 }
@@ -1542,7 +1649,14 @@ function updateRecordDayBanner(){
 function confirmAddPeriod(){
   const input = document.getElementById('newPeriodInput');
   const name = (input && input.value.trim()) || ('الحصة ' + periodSeq);
-  const p = {id:'p'+periodSeq, name, onTime:'07:00', lateTime:'07:15', recordsByDate:{}};
+  const p = {
+    id:'p'+periodSeq,
+    name,
+    onTime:'07:00',
+    lateTime:'07:15',
+    weekdays:[weekdayFromDateKey(selectedDate)],
+    recordsByDate:{}
+  };
   periodSeq++;
   periods.push(p);
   currentPeriodId = p.id;
@@ -1555,15 +1669,27 @@ function confirmAddPeriod(){
 }
 
 function doDeletePeriod(id){
-  if(periods.length <= 1) return;
+  const dayPeriods = periodsForDate(selectedDate);
+  if(dayPeriods.length <= 1) return;
+
   const p = periods.find(x=>x.id===id);
-  periods = periods.filter(x=>x.id!==id);
-  if(currentPeriodId === id) currentPeriodId = periods[0].id;
+  if(!p) return;
+
+  const dow = weekdayFromDateKey(selectedDate);
+  p.weekdays = (Array.isArray(p.weekdays) ? p.weekdays : []).map(Number).filter(d => d !== dow);
+
+  // إذا لم تعد الحصة مرتبطة بأي يوم نحذفها نهائيًا، وإلا تبقى في أيامها الأخرى (للبيانات القديمة).
+  if(!p.weekdays.length){
+    periods = periods.filter(x=>x.id!==id);
+  }
+
+  const remaining = periodsForDate(selectedDate);
+  currentPeriodId = remaining.length ? remaining[0].id : null;
   syncSettingsInputs();
   renderPeriodTabs();
   renderAll();
   saveAppData();
-  showToast('تم حذف "'+p.name+'"');
+  showToast('تم حذف "'+p.name+'" من هذا اليوم');
 }
 
 function syncSettingsInputs(){
@@ -1990,7 +2116,7 @@ function renderActivityLog(){
   const list = document.getElementById('activityList');
   if(!list) return;
   let entries = [];
-  periods.forEach(p=>{
+  periodsForDate(selectedDate).forEach(p=>{
     const dayRecords = getDayRecords(p, selectedDate, false);
     Object.entries(dayRecords).forEach(([sid, rec])=>{
       const s = students.find(x=>x.id===sid);
@@ -2349,7 +2475,7 @@ h2{ font-size:15px; margin:22px 0 10px; border-bottom:2px solid #00AEFA; padding
 }
 
 function exportDayReport(){
-  const d = new Date(selectedDate);
+  const d = dateFromKey(selectedDate);
   const dateReadable = fmtDate(d);
   let body = `<h1>تقرير الحضور اليومي</h1><div class="sub">التاريخ: ${dateReadable} (${selectedDate})</div>`;
   periods.forEach(p=>{
